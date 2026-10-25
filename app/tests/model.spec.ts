@@ -173,6 +173,13 @@ test("communication cabinet imports safely and contributes only enabled material
   expect(parseProject(JSON.stringify(emptyProject())).communication).toBeUndefined();
 });
 
+test("known Resi9 Connect cabinets provide their manufacturer source without a duplicate switch", () => {
+  const project = { ...emptyProject(), communication: { ...emptyCommunication(), reference: "R9H18402VDIXS", grade: "Grade 3TV · Cat 6A", switchPorts: 9 } };
+  const materials = materialList(project);
+  expect(materials.find((material) => material.name === "Coffret de communication")).toMatchObject({ reference: "R9H18402VDIXS", source: "https://www.se.com/fr/fr/product/R9H18402VDIXS/resi9-connect-coffret-18m2r-switch-9-ports-poe-2-pc-grade-3tv-8xrj45-cat6a/" });
+  expect(materials.some((material) => material.name.startsWith("Switch réseau"))).toBe(false);
+});
+
 test("two circuits persist, reject duplicate assignments, and unlink independently", () => {
   const project = emptyProject();
   project.circuits = ["c1", "c2"].map((id) => ({ id, name: id, room: "", floor: "", usage: "", load: "", cable: "" }));

@@ -1,4 +1,4 @@
-import { CATALOG_VERSION, DISTRIBUTORS, enclosureReference, GTL_ACCESSORIES, GTL_OPTIONS, manufacturerUrl, PRODUCT_BY_REF, type GtlAccessoryReference, type GtlReference } from "../data/catalog";
+import { CATALOG_VERSION, communicationCabinet, DISTRIBUTORS, enclosureReference, GTL_ACCESSORIES, GTL_OPTIONS, manufacturerUrl, PRODUCT_BY_REF, type GtlAccessoryReference, type GtlReference } from "../data/catalog";
 import { shareCircuits } from "./shared-circuits";
 
 export type Distribution = { id: string; reference: string; slot: number };
@@ -273,9 +273,10 @@ export function materialList(project: Project): Material[] {
   const communication = project.communication;
   if (communication?.enabled) {
     const manual = "Composition à confirmer";
-    add(communication.reference || "À sélectionner", "Coffret de communication", 1, "", manual);
+    const cabinet = communicationCabinet(communication.reference);
+    add(communication.reference || "À sélectionner", "Coffret de communication", 1, cabinet?.source ?? "", manual);
     if (communication.ports.length) add("À sélectionner", "Liaison RJ45 à équiper · brassage et prise terminale", communication.ports.length, "", manual);
-    if (communication.switchPorts) add("À sélectionner", `Switch réseau · ${communication.switchPorts} ports`, 1, "", manual);
+    if (communication.switchPorts && !cabinet) add("À sélectionner", `Switch réseau · ${communication.switchPorts} ports`, 1, "", manual);
     if (communication.box) add("À renseigner", "Box Internet", 1, "", manual);
     if (communication.optical) add("À renseigner", "Terminaison optique · DTIo / PTO", 1, "", manual);
     if (communication.dti) add("À renseigner", "DTI cuivre", 1, "", manual);

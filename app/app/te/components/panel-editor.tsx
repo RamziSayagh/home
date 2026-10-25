@@ -6,6 +6,7 @@ import GtlEditor from "./gtl";
 import CircuitUsage, { RELAY_LIGHTING_USAGE } from "./circuit-usage";
 import { rowBreakerTotals } from "../lib/row-totals";
 import CableSection from "./cable-section";
+import SingleLineDiagram from "./single-line-diagram";
 import { CircuitReorderList, CircuitDropRow, CircuitDragHandle } from "./circuit-reorder";
 import RowDistribution, { DistributionCatalogCard } from "./row-distribution";
 import DistributionIllustration, { DistributionVisualGuide } from "./distribution-illustration";
@@ -20,7 +21,7 @@ import { distributionPlacementError, firstFreeDistributionSlot, rowDistributions
 
 type DragItem = { reference: string; deviceId?: string; panelIndex?: number; type?: "distribution"; distributionId?: string; rowId?: string };
 type Target = { rowId: string; slot: number; panelIndex: number; type?: "distribution" };
-type View = "circuits" | "materials" | "checks";
+type View = "circuits" | "singleLine" | "materials" | "checks";
 type DistributionSelection = { reference: string; panelIndex: number; rowId?: string; id?: string };
 
 function EquipmentFace({ product, compact = false }: { product: Product; compact?: boolean }) {
@@ -58,7 +59,7 @@ function PlacedDevice({ device, circuits, selected, onSelect, panelIndex }: { de
 function Field({ label, children }: { label: string; children: ReactNode }) { return <label className="te-field"><span>{label}</span>{children}</label>; }
 
 function defaultCableSection(usage: string) {
-  return (usage === "Éclairage" || usage === RELAY_LIGHTING_USAGE) ? "1,5 mm²" : usage === "Prises" ? "2,5 mm²" : "";
+  return (usage === "Éclairage" || usage === RELAY_LIGHTING_USAGE || usage === "Circuit spécialisé · Volet roulant") ? "1,5 mm²" : usage === "Prises" ? "2,5 mm²" : "";
 }
 
 export default function PanelEditor() {
@@ -91,6 +92,7 @@ export default function PanelEditor() {
   const selectedProduct = selected ? PRODUCT_BY_REF[selected.reference] : null;
   const targetRow = project.rows.some((r) => r.id === addRowId) ? addRowId : project.rows[0].id;
   const checks = projectChecks(workspace);
+  const assignedCircuitCount = workspace.circuits.filter(circuit => panels.some(panel => panel.devices.some(device => deviceCircuitIds(device).includes(circuit.id)))).length;
   const materials = materialList(workspace);
   const budgets = SUPPLIERS.map(supplier => ({ ...supplier, ...materialBudget(materials, supplier.id) }));
   const comparable = comparableSuppliersBudget(materials);
@@ -369,7 +371,7 @@ export default function PanelEditor() {
           <DragOverlay dropAnimation={null}>{activeDrag ? activeDrag.type === "distribution" ? <div className="te-distribution-ghost"><DistributionIllustration fit product={DISTRIBUTORS.find(p => p.reference === activeDrag.reference)!} /><span>{activeDrag.reference} · {DISTRIBUTORS.find(p => p.reference === activeDrag.reference)!.modules} M</span></div> : <div className="te-drag-ghost"><EquipmentFace product={PRODUCT_BY_REF[activeDrag.reference]} /><span>{PRODUCT_BY_REF[activeDrag.reference].name}</span></div> : null}</DragOverlay>
         </DndContext>
         <CommunicationEditor value={workspace.communication} onChange={(communication) => commitWorkspace({ ...workspace, communication })} />
-        <section className="te-records te-card" aria-label="Dossier du tableau"><div className="te-records-header"><nav aria-label="Vues du dossier">{([["circuits", "Les circuits", workspace.circuits.length], ["materials", "Le matériel", materials.length], ["checks", "Points à vérifier", checks.length]] as const).map(([value, label, count]) => <button key={value} aria-pressed={view === value} onClick={() => setView(value)}>{label}<span>{count}</span></button>)}</nav><span>LE DOSSIER DE VOTRE TABLEAU</span></div>
+        <section className="te-records te-card" aria-label="Dossier du tableau"><div className="te-records-header"><nav aria-label="Vues du dossier">{([["circuits", "Les circuits", workspace.circuits.length], ["singleLine", "Schéma unifilaire", assignedCircuitCount], ["materials", "Le matériel", materials.length], ["checks", "Points à vérifier", checks.length]] as const).map(([value, label, count]) => <button key={value} aria-pressed={view === value} onClick={() => setView(value)}>{label}<span>{count}</span></button>)}</nav><span>LE DOSSIER DE VOTRE TABLEAU</span></div>
           <section hidden={view !== "circuits"} className="te-record-content te-print-section"><h2>Les circuits de la maison</h2><p className="te-muted">Liste générale de la maison. Les circuits restent visibles quel que soit le tableau sélectionné. Affectez-les ensuite à un disjoncteur.</p>
             <form onSubmit={addCircuit} className="te-circuit-form"><Field label="Nom du circuit"><input name="name" required maxLength={160} placeholder="Ex. Prises du salon" /></Field><Field label="Pièce"><input name="room" maxLength={160} placeholder="Ex. Salon" list="te-rooms" /></Field><Field label="Niveau"><select name="floor"><option value="">À préciser</option><option>Sous-sol</option><option>Rez-de-chaussée</option><option>Étage</option><option>Grenier</option><option>Extérieur</option><option>Autre</option></select></Field><Field label="Usage"><CircuitUsage /></Field><button className="te-primary" type="submit">+ Ajouter un circuit</button></form>
             <datalist id="te-rooms">{["Entrée", "Bureau", "Salon", "Cuisine", "Salle à manger", "Chambre", "Salle d’eau", "Salle de bains", "Palier", "Extérieur"].map((room) => <option key={room} value={room} />)}</datalist>
@@ -392,6 +394,7 @@ export default function PanelEditor() {
               })}</CircuitReorderList>}
             </>}
           </section>
+          <section hidden={view !== "singleLine"} className="te-record-content te-print-section"><h2>Schéma unifilaire</h2><p className="te-muted">Lecture de la configuration saisie : alimentation, différentiels, disjoncteurs et circuits associés. Les liens non renseignés restent explicitement indiqués. Ce document de préparation ne remplace ni un schéma de câblage, ni une vérification réglementaire.</p><SingleLineDiagram project={workspace} /></section>
           <section hidden={view !== "materials"} className="te-record-content te-print-section"><div className="te-output-heading"><div><h2>La liste du matériel</h2><p className="te-muted">Prix unitaires TTC Elec44, 123elec et Elecdirect · dates de relevé sur les liens de prix · hors livraison. Les éléments non chiffrés sont exclus de chaque sous-total. Assemblage à vérifier avant commande.</p></div><button onClick={() => download(materialsCsv(materials), "materiel-tableau.csv", "text/csv;charset=utf-8")}>Exporter CSV ↓</button></div>
             <div className="te-table-scroll"><table><thead><tr><th>Référence</th><th>Désignation</th><th>Quantité</th>{SUPPLIERS.map(s => <th key={s.id}>{s.name} TTC</th>)}{SUPPLIERS.map(s => <th key={s.id}>Total {s.name}</th>)}<th>État</th></tr></thead><tbody>{materials.map((m, i) => <tr key={i}><td>{m.source ? <a href={m.source} target="_blank" rel="noreferrer">{m.reference} ↗</a> : m.reference}</td><td>{m.name}</td><td>{m.quantity}</td>{SUPPLIERS.map(s => <td key={s.id}><SupplierPrice referenceCode={m.reference} supplier={s.id} /></td>)}{SUPPLIERS.map(s => { const cents = supplierPrice(m.reference, s.id)?.unitPriceCents; return <td key={s.id} className="te-price-total">{cents == null ? "Non chiffré" : formatPrice(cents * m.quantity)}</td>; })}<td>{m.status}</td></tr>)}</tbody><tfoot>{budgets.map(b => <tr key={b.id}><th colSpan={3 + SUPPLIERS.length}>{b.missingQuantity ? "Sous-total connu TTC" : "Total estimé TTC"} · {b.name}</th>{SUPPLIERS.map(s => <td key={s.id} className="te-price-total">{s.id === b.id ? formatPrice(b.totalCents) : "—"}</td>)}<td>{b.missingQuantity ? `${b.missingQuantity} élément(s) non chiffré(s)` : "Tous les éléments chiffrés"}</td></tr>)}</tfoot></table></div>
             <h3>Accessoires complémentaires</h3><p className="te-muted">Ajoutez les borniers, obturateurs et liaisons identifiés lors de l’étude. Ces lignes ne valident aucune compatibilité.</p><form className="te-accessory-form" onSubmit={(e) => { e.preventDefault(); const form = e.currentTarget; const data = new FormData(form); if (commit({ ...project, accessories: [...project.accessories, { id: uid(), reference: String(data.get("reference") ?? ""), name: String(data.get("name") ?? ""), quantity: Number(data.get("quantity")) }] }, "Accessoire ajouté à la liste.")) form.reset(); }}><Field label="Désignation"><input name="name" required maxLength={160} /></Field><Field label="Référence (facultative)"><input name="reference" maxLength={80} /></Field><Field label="Quantité"><input name="quantity" type="number" required min={1} max={999} defaultValue={1} /></Field><button type="submit">+ Ajouter l’accessoire</button></form>

@@ -38,6 +38,6 @@
     "R9H13404": { "unitPriceCents": 6914, "source": "https://www.123elec.com/schneider-resi9-tableau-electrique-4-rangees-52-modules-r9h13404.html", "status": "verified" },
     "R9H18404": { "unitPriceCents": 10990, "source": "https://www.123elec.com/schneider-resi9-tableau-electrique-4-rangees-de-18-modules-r9h18404.html", "status": "verified" },
     "R9HKT13": { "unitPriceCents": 9990, "source": "https://www.123elec.com/schneider-resi9-kit-goulotte-13-modules.html", "status": "verified" },
-    "R9HKT18": { "unitPriceCents": null, "source": null, "status": "not-found" }
+    "R9HKT18": { "unitPriceCents": 10990, "source": "https://www.123elec.com/schneider-resi9-kit-goulotte-18-modules.html", "status": "verified", "checkedAt": "2026-10-25" }
   }
 }

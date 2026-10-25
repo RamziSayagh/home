@@ -1,5 +1,10 @@
 import { expect, test } from "@playwright/test";
 
+// Keep CRUD fixtures isolated from the intentionally shared production list.
+test.beforeEach(async ({ page }) => {
+  await page.route("**/api/achats", route => route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ error: "not_configured" }) }));
+});
+
 test("purchases can be managed, restored, filtered and exported", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("link", { name: "Achats", exact: true }).click();

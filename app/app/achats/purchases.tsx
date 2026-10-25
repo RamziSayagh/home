@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 const STORAGE = "maison1973.purchases.v1";
+const endpoint = "/api/achats";
 const categories = ["Matériaux", "Électricité", "Plomberie", "Isolation", "Revêtements", "Peinture", "Outillage", "Autre"];
 const statuses = ["À acheter", "Commandé", "Reçu"];
 const units = ["pièce", "m²", "m³", "m", "kg", "L", "lot", "sac", "boîte"];
@@ -28,6 +29,7 @@ export default function Purchases() {
   const [items, setItems] = useState<Item[]>([]);
   const [ready, setReady] = useState(false);
   const [storageError, setStorageError] = useState("");
+  const [syncStatus, setSyncStatus] = useState("Chargement de la sauvegarde partagée…");
   const [form, setForm] = useState(empty);
   const [editing, setEditing] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
@@ -36,35 +38,86 @@ export default function Purchases() {
   const [status, setStatus] = useState("");
   const [notice, setNotice] = useState("");
   const nameInput = useRef<HTMLInputElement>(null);
+  const syncTimer = useRef<number | null>(null);
+  const itemsRef = useRef<Item[]>([]);
+
+  function saveLocal(next: Item[]) {
+    try {
+      localStorage.setItem(STORAGE, JSON.stringify({ version: 1, items: next }));
+      setStorageError("");
+      return true;
+    } catch {
+      setStorageError("La sauvegarde locale a échoué. Gardez cette page ouverte et exportez vos achats avant de la quitter.");
+      return false;
+    }
+  }
+
+  async function saveShared(next: Item[]) {
+    try {
+      setSyncStatus("Enregistrement en ligne…");
+      const response = await fetch(endpoint, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: next }), signal: AbortSignal.timeout(10000), keepalive: JSON.stringify(next).length < 60000 });
+      if (!response.ok) throw new Error();
+      setSyncStatus("À jour · sauvegarde partagée");
+    } catch {
+      setSyncStatus("Sauvegarde locale · connexion à la base indisponible");
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
     // Restore after hydration, before enabling edits or writing to storage.
-    queueMicrotask(() => {
-    if (cancelled) return;
-    try {
+    void (async () => {
+      if (cancelled) return;
+      let local: Item[] = [];
+      try {
       const raw = localStorage.getItem(STORAGE);
       if (raw) {
         const data = JSON.parse(raw);
         if (data.version !== 1 || !Array.isArray(data.items) || !data.items.every(validItem) || new Set(data.items.map((i: Item) => i.id)).size !== data.items.length) throw new Error();
-        setItems(data.items);
+        local = data.items;
       }
+      } catch {
+        setStorageError("Impossible de charger la sauvegarde locale. Vos données existantes sont conservées. Vérifiez l’accès au stockage du navigateur puis rechargez la page.");
+        return;
+      }
+      // Keep the local list usable while the database connection is established.
+      // A response received after a user edit must not overwrite that edit.
+      itemsRef.current = local;
+      setItems(local);
       setReady(true);
-    } catch {
-      setStorageError("Impossible de charger la sauvegarde locale. Vos données existantes sont conservées. Vérifiez l’accès au stockage du navigateur puis rechargez la page.");
-    }
-    });
-    return () => { cancelled = true; };
+      try {
+        const response = await fetch(endpoint, { cache: "no-store", signal: AbortSignal.timeout(10000) });
+        if (!response.ok) throw new Error((await response.json()).error);
+        const remote = await response.json() as { items: Item[] | null };
+        if (cancelled) return;
+        if (remote.items && local.length === 0 && JSON.stringify(itemsRef.current) === JSON.stringify(local)) {
+          itemsRef.current = remote.items;
+          setItems(remote.items);
+          saveLocal(remote.items);
+          setSyncStatus("À jour · sauvegarde partagée");
+        } else {
+          if (itemsRef.current.length) void saveShared(itemsRef.current);
+          else setSyncStatus("À jour · sauvegarde partagée");
+        }
+      } catch {
+        if (cancelled) return;
+        setSyncStatus("Sauvegarde locale · stockage Vercel à configurer");
+      }
+    })();
+    const flush = () => {
+      if (syncTimer.current) window.clearTimeout(syncTimer.current);
+      if (itemsRef.current.length) void saveShared(itemsRef.current);
+    };
+    window.addEventListener("pagehide", flush);
+    return () => { cancelled = true; window.removeEventListener("pagehide", flush); if (syncTimer.current) window.clearTimeout(syncTimer.current); };
   }, []);
 
   function update(next: Item[]) {
+    itemsRef.current = next;
     setItems(next);
-    try {
-      localStorage.setItem(STORAGE, JSON.stringify({ version: 1, items: next }));
-      setStorageError("");
-    } catch {
-      setStorageError("La sauvegarde a échoué. Gardez cette page ouverte et exportez vos achats avant de la quitter.");
-    }
+    if (!saveLocal(next)) return;
+    if (syncTimer.current) window.clearTimeout(syncTimer.current);
+    syncTimer.current = window.setTimeout(() => void saveShared(next), 500);
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -107,7 +160,7 @@ export default function Purchases() {
     <main className="purchase-main">
       <header className="purchase-header"><div><p className="kicker">Le carnet des travaux</p><h1>Les achats.</h1><p>Matériaux, articles et équipement : tout pour préparer le chantier.</p></div><button onClick={exportCsv} disabled={!items.length}>Exporter en CSV ↗</button></header>
       <div className="purchase-stats" aria-label="Bilan des achats"><div><span>Total prévu TTC</span><strong>{currency.format(total)}</strong></div><div><span>Reste à commander TTC</span><strong>{currency.format(remaining)}</strong></div><div><span>Articles reçus</span><strong>{received} <small>/ {items.length}</small></strong></div></div>
-      <p className="purchase-storage">Sauvegarde dans ce navigateur uniquement · Exportez votre liste pour en conserver une copie. Les totaux incluent tous les articles, même filtrés.</p>
+      <p className="purchase-storage">{syncStatus} · Une copie locale reste disponible dans ce navigateur. Exportez votre liste pour en conserver une copie. Les totaux incluent tous les articles, même filtrés.</p>
       {storageError && <p role="alert" className="purchase-error">{storageError}</p>}
       <div className="purchase-layout">
         <section className="purchase-form" aria-labelledby="form-title"><p className="kicker">{editing ? "Mise à jour" : "Compléter la liste"}</p><h2 id="form-title">{editing ? "Modifier l’article" : "Ajouter un article"}</h2>

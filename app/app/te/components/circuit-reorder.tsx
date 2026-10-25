@@ -21,7 +21,7 @@ export function CircuitReorderList({ children, onMove }: { children: ReactNode; 
     onDragEnd={event => { setActiveName(""); if (event.over && event.active.id !== event.over.id) onMove(String(event.active.id), String(event.over.id)); }}
     accessibility={{ screenReaderInstructions: { draggable: "Espace pour saisir le circuit, flèches haut et bas pour choisir sa place, Espace pour déposer, Échap pour annuler." } }}>
     <div className="te-circuit-list">{children}</div>
-    <DragOverlay dropAnimation={null}>{activeName ? <div className="te-circuit-drag-preview">{activeName}</div> : null}</DragOverlay>
+    <DragOverlay dropAnimation={null}>{activeName ? <div className="te-circuit-drag-preview"><span aria-hidden="true">⠿</span><strong>{activeName}</strong></div> : null}</DragOverlay>
   </DndContext>;
 }
 

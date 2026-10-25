@@ -226,10 +226,11 @@ test("communication cabinet persists, exports, prints and supports mobile editin
   await openEditor(page);
   const cabinet = page.getByRole("region", { name: "Coffret de communication", exact: true });
   await cabinet.getByLabel("Inclure un coffret de communication").check();
-  await cabinet.getByLabel("Référence du coffret").fill("Mon coffret");
+  await cabinet.getByLabel("Modèle de coffret").selectOption("R9H18402VDIXS");
+  await expect(cabinet.getByText("8 RJ45 Cat 6A · switch PoE 9 ports · 2 prises de courant", { exact: false })).toBeVisible();
   await cabinet.getByLabel("Emplacement du coffret").fill("Entrée");
   await cabinet.getByLabel("Box Internet", { exact: true }).check();
-  await cabinet.getByLabel("Nombre de ports du switch").fill("8");
+  await expect(cabinet.getByLabel("Nombre de ports du switch")).toHaveValue("9");
   await cabinet.getByRole("button", { name: "+ Ajouter une prise RJ45", exact: true }).click();
   await cabinet.getByLabel("Pièce desservie · prise 1").fill("Bureau");
   await cabinet.getByLabel("Repère · prise 1").fill("PC");

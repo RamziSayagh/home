@@ -10,6 +10,20 @@
 
 ## Electrical panel editor
 
+- Circuit drag previews are constrained to a single compact line (2026-10-25): long circuit names truncate instead of producing an abnormally tall floating overlay. The preview retains a drag glyph and works for pointer, touch and keyboard reordering.
+
+- New roller-shutter circuits now default to a 1.5 mm² cable section (2026-10-25), matching the existing lighting default. Selecting this usage on an existing circuit still fills only an empty cable field; explicit cable sections are preserved.
+
+- Refined the single-line view with hand-drawn SVG equipment illustrations and dedicated responsive/print CSS (2026-10-25). Differential branches resolve assignments across the entire panel, including other DIN rows; two circuits on one breaker are shown side by side. Unknown supply specifications are not inferred. Free-text circuit groups were removed at the user's request.
+
+- Redesigned the generated single-line diagram as a printable technical sheet inspired by conventional French unifilar layouts (2026-10-25): centered supply, main bus, differential branches, breaker symbols, circuit pictograms, cable-section captions and a project title block. It remains derived only from configured data and explicitly labels unprotected or missing assignments; it is not a compliance or wiring document.
+
+- Added the two user-provided Schneider Resi9 Connect communication cabinets (2026-10-25): R9H13402VDIXS (13 modules, six Cat 6A RJ45, five-port PoE switch) and R9H18402VDIXS (18 modules, eight Cat 6A RJ45, nine-port PoE switch). Choosing a model fills its Grade 3TV / Cat 6A and switch-port values, preserves imported custom references, links its official manufacturer page in the editor and material list, and avoids adding its integrated switch as a duplicate material line. Prices remain unverified.
+
+- Added the user-provided 123elec offer for the Schneider Resi9 R9HKT18 18-module GTL kit (2026-10-25): €109.90 TTC (10990 cents), exact R9HKT18 reference and EAN 3606480981159 verified against the retailer page. The static 123elec snapshot and future-refresh source now use the canonical URL without tracking parameters; GTL budgets and common supplier comparison include it.
+
+- Added a generated single-line diagram view (2026-10-25): it renders the configured supply, one or two panels, rows, RCDs, associated breakers and circuits, plus unassigned circuits and devices without an upstream RCD. It is derived entirely from the project and is printable; it is a preparation view rather than a wiring or compliance document.
+
 - Added combinable filters to the general house-circuits list (2026-10-25): free-text search across name/room/floor/usage, level, usage and assigned/unassigned status. Filters are local UI state, do not alter project data, and keep drag-reordering available among visible circuits.
 
 - Shared synchronization policy (2026-10-25): TE reads the shared project once when the page opens, with no polling or focus/visibility refresh. Each debounced local edit atomically replaces the shared project (last local write wins), so stale revisions do not return 409 conflicts. Local-only editing remains available immediately when the API explicitly reports `not_configured`.
@@ -96,9 +110,10 @@
 
 ## Renovation purchases
 
+- Purchases now use the shared Neon PostgreSQL database as well as a browser-local copy (2026-10-25). `/api/achats` validates the complete purchase payload and automatically initializes its isolated one-row `maison1973_shared_purchases` table. A browser with an empty local list restores the shared list; an existing local list remains authoritative and is uploaded, so prior browser data is not silently replaced. Mutations save locally immediately, are sent to the database after a short debounce, and are flushed when leaving the page. When database credentials or connectivity are unavailable, the page remains fully usable with an explicit local-only status. Existing invalid local data remains protected and is never overwritten. Lint, production build and all three purchases Playwright scenarios passed.
 - Added `/achats` on 2026-10-24, linked from both home navigation menus. The French purchase manager supports article creation/editing, confirmed deletion, categories, room/zone, supplier/reference, fractional quantities and units, unit prices including tax, notes, and statuses (to buy, ordered, received).
 - Global summaries show total planned cost, remaining cost to order, and received article count. Search and category/status filters affect the list only. Unknown prices count as zero and are explained in the form. CSV exports all records with French decimal formatting and spreadsheet formula escaping.
-- `app/app/achats/purchases.tsx` owns the client interactions; `page.tsx` provides metadata and `purchases.css` scopes the responsive design. Versioned browser-local storage uses `maison1973.purchases.v1`; restoration precedes editing and every mutation saves immediately. Invalid/unreadable saved data blocks editing without overwriting storage; write failures display an export prompt. There is no server synchronization or shared database.
+- `app/app/achats/purchases.tsx` owns the client interactions; `page.tsx` provides metadata and `purchases.css` scopes the responsive design. Versioned browser-local storage uses `maison1973.purchases.v1`; restoration precedes editing and every mutation saves immediately. Invalid/unreadable saved data blocks editing without overwriting storage; write failures display an export prompt.
 - Production build and lint passed. Three Playwright scenarios in `app/tests/purchases.spec.ts` passed: full CRUD/status/filter/export/reload flow, mobile creation without overflow, and preservation of corrupt saved data. No hosting changes or deployment were performed.
 
 ## Interactive 3D page

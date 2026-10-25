@@ -38,6 +38,9 @@ test("Elec44 budget aggregates both panels in cents and leaves unknown prices un
   expect(supplierPrice("A9F77240")?.unitPriceCents).toBe(5059);
   expect(supplierPrice("A9F77240", "123elec")?.unitPriceCents).toBe(4550);
   expect(priceDateLabel("123elec", "A9F77240")).toBe("25/10/2026");
+  expect(supplierPrice("R9HKT18", "123elec")?.unitPriceCents).toBe(10990);
+  expect(supplierPrice("R9HKT18", "123elec")?.source).toBe("https://www.123elec.com/schneider-resi9-kit-goulotte-18-modules.html");
+  expect(priceDateLabel("123elec", "R9HKT18")).toBe("25/10/2026");
   expect(comparableSuppliersBudget([{ reference: "A9F77240", name: "40 A", quantity: 2, source: "", status: "" }])).toEqual({ totals: { elec44: 10118, "123elec": 9100, elecdirect: 9472 }, quantity: 2 });
   expect(priceDateLabel("elec44", "A9F77240")).toBe("25/10/2026");
   expect(priceDateLabel("elec44", "A9Z51240")).toBe("25/10/2026");
@@ -48,8 +51,8 @@ test("Elec44 budget aggregates both panels in cents and leaves unknown prices un
   expect(supplierPrice("R9EFC616")?.source).toMatch(/^https:\/\/elec44\.fr\//);
   expect(supplierPrice("R9EFC616", "123elec")?.unitPriceCents).toBe(1010);
   expect(supplierPrice("R9EFC616", "123elec")?.source).toMatch(/^https:\/\/www\.123elec\.com\//);
-  expect(materialBudget(materials, "123elec")).toEqual({ totalCents: 4690 * 2 + 1010 * 3 + 499 * 2, pricedQuantity: 7, missingQuantity: 6 });
-  expect(comparableBudget(materials)).toEqual({ elec44Cents: 4590 * 2 + 995 * 3 + 600 * 2, oneTwoThreeElecCents: 4690 * 2 + 1010 * 3 + 499 * 2, quantity: 7, differenceCents: 43 });
+  expect(materialBudget(materials, "123elec")).toEqual({ totalCents: 4690 * 2 + 1010 * 3 + 499 * 2 + 10990 * 2, pricedQuantity: 9, missingQuantity: 4 });
+  expect(comparableBudget(materials)).toEqual({ elec44Cents: 4590 * 2 + 995 * 3 + 600 * 2 + 11280 * 2, oneTwoThreeElecCents: 4690 * 2 + 1010 * 3 + 499 * 2 + 10990 * 2, quantity: 9, differenceCents: -537 });
   const csv = materialsCsv(materials);
   expect(csv).toContain('"9,95";"29,85"');
   expect(csv).toContain('"";"";"Non chiffré"');

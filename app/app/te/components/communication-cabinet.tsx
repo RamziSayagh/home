@@ -1,19 +1,22 @@
 import { emptyCommunication, uid, type CommunicationCabinet } from "../lib/model";
+import { COMMUNICATION_CABINETS, communicationCabinet } from "../data/catalog";
 
 export default function CommunicationEditor({ value, onChange }: { value?: CommunicationCabinet; onChange: (next: CommunicationCabinet) => void }) {
   const cabinet = value ?? emptyCommunication();
   const update = (patch: Partial<CommunicationCabinet>) => onChange({ ...cabinet, ...patch });
+  const selectedModel = communicationCabinet(cabinet.reference);
   return <section className="te-communication te-card" aria-label="Coffret de communication">
     <div className="te-section-heading"><span className="te-step">04</span><h2>Le coffret de communication</h2></div>
     <p className="te-muted">Organisez le réseau de la maison : arrivée Internet, équipements et brassage vers les pièces.</p>
     <label className="te-communication-toggle"><input type="checkbox" checked={value?.enabled ?? false} onChange={(e) => update({ enabled: e.target.checked })} />Inclure un coffret de communication</label>
     {value?.enabled ? <>
       <div className="te-communication-fields">
-        <label className="te-field"><span>Référence du coffret</span><input value={cabinet.reference} maxLength={80} placeholder="Marque et référence à préciser" onChange={(e) => update({ reference: e.target.value })} /></label>
+        <label className="te-field"><span>Modèle de coffret</span><select value={cabinet.reference} onChange={(event) => { const reference = event.target.value; const model = communicationCabinet(reference); update(model ? { reference, grade: model.grade, switchPorts: model.switchPorts } : { reference }); }}><option value="">À sélectionner</option>{selectedModel || !cabinet.reference ? null : <option value={cabinet.reference}>{cabinet.reference} · Référence existante</option>}{COMMUNICATION_CABINETS.map(model => <option key={model.reference} value={model.reference}>{model.name}</option>)}</select></label>
         <label className="te-field"><span>Emplacement du coffret</span><input value={cabinet.location} maxLength={160} placeholder="Ex. Entrée, garage…" onChange={(e) => update({ location: e.target.value })} /></label>
         <label className="te-field"><span>Grade / catégorie du réseau</span><input value={cabinet.grade} maxLength={80} placeholder="À préciser selon le matériel" onChange={(e) => update({ grade: e.target.value })} /></label>
         <label className="te-field"><span>Nombre de ports du switch</span><input type="number" min={0} max={48} value={cabinet.switchPorts} onChange={(e) => { const ports = Number(e.target.value); if (Number.isInteger(ports) && ports >= 0 && ports <= 48) update({ switchPorts: ports }); }} /></label>
       </div>
+      {selectedModel ? <p className="te-info"><strong>{selectedModel.reference}</strong> · {selectedModel.detail} · <a href={selectedModel.source} target="_blank" rel="noreferrer">Fiche Schneider ↗</a></p> : null}
       <div className="te-communication-equipment">{([
         ["optical", "Terminaison optique · DTIo / PTO"], ["dti", "DTI cuivre"], ["box", "Box Internet"],
       ] as const).map(([key, label]) => <label key={key}><input type="checkbox" checked={cabinet[key]} onChange={(e) => update({ [key]: e.target.checked })} />{label}</label>)}</div>

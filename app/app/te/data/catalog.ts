@@ -17,6 +17,13 @@ export const GTL_ACCESSORIES = [
 export type GtlReference = (typeof GTL_OPTIONS)[number]["reference"];
 export type GtlAccessoryReference = (typeof GTL_ACCESSORIES)[number]["reference"];
 
+export const COMMUNICATION_CABINETS = [
+  { reference: "R9H13402VDIXS", name: "Resi9 Connect · 13 modules · Grade 3TV", detail: "6 RJ45 Cat 6A · switch PoE 5 ports · 2 prises de courant", grade: "Grade 3TV · Cat 6A", switchPorts: 5, source: "https://www.se.com/fr/fr/product/R9H13402VDIXS/resi9-connect-coffret-13m2r-switch-5-ports-poe-2-pc-grade-3tv-6xrj45-cat6a/" },
+  { reference: "R9H18402VDIXS", name: "Resi9 Connect · 18 modules · Grade 3TV", detail: "8 RJ45 Cat 6A · switch PoE 9 ports · 2 prises de courant", grade: "Grade 3TV · Cat 6A", switchPorts: 9, source: "https://www.se.com/fr/fr/product/R9H18402VDIXS/resi9-connect-coffret-18m2r-switch-9-ports-poe-2-pc-grade-3tv-8xrj45-cat6a/" },
+] as const;
+export type CommunicationCabinetReference = (typeof COMMUNICATION_CABINETS)[number]["reference"];
+export const communicationCabinet = (reference: string) => COMMUNICATION_CABINETS.find(cabinet => cabinet.reference === reference);
+
 export type Product = {
   reference: string;
   name: string;
