@@ -1,0 +1,248 @@
+{
+  "supplier": "Elecdirect",
+  "currency": "EUR",
+  "tax": "TTC",
+  "checkedAt": "2026-10-25",
+  "items": {
+    "R9HKT13": {
+      "unitPriceCents": 9995,
+      "source": "https://www.elecdirect.fr/goulotte-gtl-et-accessoires-schneider/3302-schneider-resi9-kit-gtl-13-modules-2-parties-corps-capot-cloisons-capot-erdf-ref-r9hkt13-3606480981142.html",
+      "status": "verified"
+    },
+    "R9HKT18": {
+      "unitPriceCents": 10990,
+      "source": "https://www.elecdirect.fr/goulotte-gtl-et-accessoires-schneider/3301-schneider-resi9-kit-goulotte-18-modules-2-parties-corps-capot-cloisons-capot-erdf-ref-r9hkt18-3606480981159.html",
+      "status": "verified"
+    },
+    "R9H13535": {
+      "unitPriceCents": 2656,
+      "source": "https://www.elecdirect.fr/goulotte-gtl-et-accessoires-schneider/3272-schneider-resi9-piece-de-jonction-solplafond-pour-goulotte-gtl-13-modules-ref-r9h13535-3606480940309.html",
+      "status": "verified"
+    },
+    "R9H13537": {
+      "unitPriceCents": null,
+      "source": null,
+      "status": "not-found"
+    },
+    "R9H13539": {
+      "unitPriceCents": 750,
+      "source": "https://www.elecdirect.fr/goulotte-gtl-et-accessoires-schneider/3270-schneider-embout-pour-goulotte-gtl-resi9-13-modules-ref-r9h13539-3606480940248.html",
+      "status": "verified"
+    },
+    "R9H13540": {
+      "unitPriceCents": 2614,
+      "source": "https://www.elecdirect.fr/goulotte-gtl-et-accessoires-schneider/5386-schneider-jonction-goulottesol-et-plafond-pour-goulotte-gtl-resi9-13-modules-ref-r9h13540-3606480940231.html",
+      "status": "verified"
+    },
+    "R9H18535": {
+      "unitPriceCents": 2650,
+      "source": "https://www.elecdirect.fr/goulotte-gtl-et-accessoires-schneider/3254-schneider-resi9-piece-de-jonction-solplafond-pour-goulotte-gtl-18-modules-ref-r9h18535-3606480940316.html",
+      "status": "verified"
+    },
+    "R9H13541": {
+      "unitPriceCents": null,
+      "source": null,
+      "status": "not-found"
+    },
+    "R9H18539": {
+      "unitPriceCents": 910,
+      "source": "https://www.elecdirect.fr/goulotte-gtl-et-accessoires-schneider/3269-schneider-embout-pour-goulotte-gtl-resi9-18-modules-ref-r9h18539-3606480940255.html",
+      "status": "verified"
+    },
+    "R9ERA263": {
+      "unitPriceCents": 9050,
+      "source": "https://www.elecdirect.fr/disjoncteur-et-protection-modulaire-schneider/1693-schneider-resi9-xe-inter-differentiel-63a-type-a-30ma-2p-ref-r9era263-3606481100269.html",
+      "status": "verified"
+    },
+    "R9ERC263": {
+      "unitPriceCents": 7750,
+      "source": "https://www.elecdirect.fr/disjoncteur-et-protection-modulaire-schneider/1692-schneider-resi9-xe-inter-differentiel-63a-type-ac-30ma-2p-ref-r9erc263-3606481100283.html",
+      "status": "verified"
+    },
+    "R9ERF263": {
+      "unitPriceCents": 14185,
+      "source": "https://www.elecdirect.fr/disjoncteur-et-protection-modulaire-schneider/8706-schneider-resi9-xe-inter-differentiel-63a-type-fsi-30ma-2p-ref-r9erf263-3606489513733.html",
+      "status": "verified"
+    },
+    "R9PRF263": {
+      "unitPriceCents": 13490,
+      "source": "https://www.elecdirect.fr/disjoncteur-et-protection-modulaire-schneider/1437-schneider-resi9-xp-interrupteur-differentiel-2p-63a-30ma-type-fsi-peignable-r9prf263-3606489513740.html",
+      "status": "verified"
+    },
+    "A9Z61263": {
+      "unitPriceCents": null,
+      "source": null,
+      "status": "not-found"
+    },
+    "A9Z61240": {
+      "unitPriceCents": null,
+      "source": null,
+      "status": "not-found"
+    },
+    "A9Z51240": {
+      "unitPriceCents": null,
+      "source": null,
+      "status": "not-found"
+    },
+    "A9F77240": {
+      "unitPriceCents": 4736,
+      "source": "https://www.elecdirect.fr/disjoncteurs-tertiaire-industriels/5447-schneider-acti9-ic60n-disjoncteur-2p-40a-courbe-c-6000a10ka-ref-a9f77240-3606480094170.html",
+      "status": "verified"
+    },
+    "R9PLC": {
+      "unitPriceCents": 14190,
+      "source": "https://www.elecdirect.fr/parafoudre-schneider/2474-schneider-resi9-xp-parafoudre-combi-type-2-10ka-1pn-avec-accessoires-ref-r9plc-3606481176592.html",
+      "status": "verified"
+    },
+    "R9PCL216": {
+      "unitPriceCents": 3850,
+      "source": "https://www.elecdirect.fr/telerupteurs-schneider/1970-schneider-resi9-telerupteur-tl-bipolaire-2no-16a-250v-ref-r9pcl216-3606481166357.html",
+      "status": "verified"
+    },
+    "R9PCL2S": {
+      "unitPriceCents": 3395,
+      "source": "https://www.elecdirect.fr/telerupteurs-schneider/1801-schneider-resi9-telerupteur-monophase-16a-250v-silencieux-ref-r9pcl2s-3606489520724.html",
+      "status": "verified"
+    },
+    "R9EXHC05": {
+      "unitPriceCents": 810,
+      "source": "https://www.elecdirect.fr/peignes-et-accessoires-schneider/684-schneider-resi9-xe-repartiteur-horizontale-5-modules-avec-connecteur-ref-r9exhc05-3606481212115.html",
+      "status": "verified"
+    },
+    "R9EXHS05": {
+      "unitPriceCents": 470,
+      "source": "https://www.elecdirect.fr/peignes-et-accessoires-schneider/5654-schneider-resi9-xe-repartiteur-horizontale-5-modules-sans-connecteur-ref-r9exhs05-3606481212085.html",
+      "status": "verified"
+    },
+    "R9EXHC08": {
+      "unitPriceCents": 948,
+      "source": "https://www.elecdirect.fr/peignes-et-accessoires-schneider/683-schneider-resi9-xe-repartiteur-horizontale-8-modules-avec-connecteur-ref-r9exhc08-3606481212122.html",
+      "status": "verified"
+    },
+    "R9EXHS08": {
+      "unitPriceCents": 690,
+      "source": "https://www.elecdirect.fr/peignes-et-accessoires-schneider/5653-schneider-resi9-xe-repartiteur-horizontale-8-modules-sans-connecteur-ref-r9exhs08-3606481212092.html",
+      "status": "verified"
+    },
+    "R9EXHS10": {
+      "unitPriceCents": 790,
+      "source": "https://www.elecdirect.fr/peignes-et-accessoires-schneider/1639-schneider-resi9-xe-repartiteur-horizontale-10-modules-sans-connecteur-ref-r9exhs10-3606489516253.html",
+      "status": "verified"
+    },
+    "R9EXHC13": {
+      "unitPriceCents": 1225,
+      "source": "https://www.elecdirect.fr/peignes-et-accessoires-schneider/1688-schneider-resi9-xe-repartiteur-horizontale-13-modules-avec-connecteur-ref-r9exhc13-3606481212139.html",
+      "status": "verified"
+    },
+    "R9EXHS13": {
+      "unitPriceCents": 960,
+      "source": "https://www.elecdirect.fr/peignes-et-accessoires-schneider/5803-schneider-resi9-xe-repartiteur-horizontale-13-modules-sans-connecteur-ref-r9exhs13-3606481212108.html",
+      "status": "verified"
+    },
+    "R9EXHC18": {
+      "unitPriceCents": 1642,
+      "source": "https://www.elecdirect.fr/peignes-et-accessoires-schneider/1689-schneider-resi9-xe-repartiteur-horizontale-18-modules-avec-connecteur-ref-r9exhc18-3606481212146.html",
+      "status": "verified"
+    },
+    "R9PXH213": {
+      "unitPriceCents": 985,
+      "source": "https://www.elecdirect.fr/peignes-et-accessoires-schneider/2488-schneider-resi9-xp-peigne-monobloc-1pn-13-modules-63a-ref-r9pxh213-3606481160331.html",
+      "status": "verified"
+    },
+    "R9PXH218": {
+      "unitPriceCents": 1010,
+      "source": "https://www.elecdirect.fr/peignes-et-accessoires-schneider/1910-schneider-resi9-xp-peigne-monobloc-1pn-18m-63a-ref-r9pxh218-3606481278975.html",
+      "status": "verified"
+    },
+    "R9EFC602": {
+      "unitPriceCents": 1640,
+      "source": "https://www.elecdirect.fr/disjoncteur-et-protection-modulaire-schneider/2459-schneider-resi9-xe-disjoncteur-2a-courbe-c-1pn-auto-embrochable-ref-r9efc602-3606481160379.html",
+      "status": "verified"
+    },
+    "R9PFC602": {
+      "unitPriceCents": 1686,
+      "source": "https://www.elecdirect.fr/disjoncteur-et-protection-modulaire-schneider/2494-schneider-resi9-disjoncteur-xp-1pn-2a-courbe-c-peignable-ref-r9pfc602-3606481160492.html",
+      "status": "verified"
+    },
+    "R9EFC610": {
+      "unitPriceCents": 995,
+      "source": "https://www.elecdirect.fr/disjoncteur-et-protection-modulaire-schneider/2462-schneider-resi9-xe-disjoncteur-10a-courbe-c-1pn-auto-embrochable-ref-r9efc610-3606481160393.html",
+      "status": "verified"
+    },
+    "R9PFC610": {
+      "unitPriceCents": 965,
+      "source": "https://www.elecdirect.fr/disjoncteur-et-protection-modulaire-schneider/2495-schneider-resi9-disjoncteur-xp-1pn-10a-courbe-c-peignable-ref-r9pfc610-3606481160515.html",
+      "status": "verified"
+    },
+    "R9EFC616": {
+      "unitPriceCents": 995,
+      "source": "https://www.elecdirect.fr/disjoncteurs-et-tableaux-electrique-residentiels/2461-schneider-resi9-xe-disjoncteur-16a-courbe-c-1pn-auto-embrochable-ref-r9efc616-3606481160409.html",
+      "status": "verified"
+    },
+    "R9PFC616": {
+      "unitPriceCents": 965,
+      "source": "https://www.elecdirect.fr/disjoncteur-et-protection-modulaire-schneider/2504-schneider-resi9-disjoncteur-xp-1pn-16a-courbe-c-peignable-ref-r9pfc616-3606481160522.html",
+      "status": "verified"
+    },
+    "R9EFC620": {
+      "unitPriceCents": 995,
+      "source": "https://www.elecdirect.fr/disjoncteur-et-protection-modulaire-schneider/2460-schneider-resi9-xe-disjoncteur-20a-courbe-c-1pn-auto-embrochable-ref-r9efc620-3606481160416.html",
+      "status": "verified"
+    },
+    "R9PFC620": {
+      "unitPriceCents": 965,
+      "source": "https://www.elecdirect.fr/disjoncteur-et-protection-modulaire-schneider/2496-schneider-resi9-disjoncteur-xp-1pn-20a-courbe-c-peignable-ref-r9pfc620-3606481160539.html",
+      "status": "verified"
+    },
+    "R9EFC632": {
+      "unitPriceCents": 1460,
+      "source": "https://www.elecdirect.fr/disjoncteur-et-protection-modulaire-schneider/2458-schneider-resi9-xe-disjoncteur-32a-courbe-c-1pn-auto-embrochable-ref-r9efc632-3606481160430.html",
+      "status": "verified"
+    },
+    "R9PFC632": {
+      "unitPriceCents": 1460,
+      "source": "https://www.elecdirect.fr/disjoncteur-et-protection-modulaire-schneider/2493-schneider-disjoncteur-duoline-resi9-xp-a-vis-32a-vis-vis-r9pfc632-3606481160553.html",
+      "status": "verified"
+    },
+    "R9H13401": {
+      "unitPriceCents": 2073,
+      "source": "https://www.elecdirect.fr/tableaux-electriques-schneider/3300-schneider-resi9-coffret-13m-1r-ref-r9h13401-3606480927898.html",
+      "status": "verified"
+    },
+    "R9H13402": {
+      "unitPriceCents": 3380,
+      "source": "https://www.elecdirect.fr/tableaux-electriques-schneider/3299-schneider-resi9-coffret-13m-2r-ref-r9h13402-3606480927904.html",
+      "status": "verified"
+    },
+    "R9H13403": {
+      "unitPriceCents": 4870,
+      "source": "https://www.elecdirect.fr/tableaux-electriques-schneider/3298-schneider-resi9-coffret-13m-3r-ref-r9h13403-3606480927911.html",
+      "status": "verified"
+    },
+    "R9H13404": {
+      "unitPriceCents": 6790,
+      "source": "https://www.elecdirect.fr/tableaux-electriques-schneider/3297-schneider-resi9-coffret-13m-4r-ref-r9h13404-3606480927928.html",
+      "status": "verified"
+    },
+    "R9H18401": {
+      "unitPriceCents": 2999,
+      "source": "https://www.elecdirect.fr/tableaux-electriques-schneider/3296-schneider-resi9-coffret-18m-1r-ref-r9h18401-3606480927959.html",
+      "status": "verified"
+    },
+    "R9H18402": {
+      "unitPriceCents": 4690,
+      "source": "https://www.elecdirect.fr/tableaux-electriques-schneider/3294-schneider-resi9-coffret-18m-2r-ref-r9h18402-3606480927966.html",
+      "status": "verified"
+    },
+    "R9H18403": {
+      "unitPriceCents": 6398,
+      "source": "https://www.elecdirect.fr/tableaux-electriques-schneider/3293-schneider-resi9-coffret-18m-3r-ref-r9h18403-3606480927973.html",
+      "status": "verified"
+    },
+    "R9H18404": {
+      "unitPriceCents": 10250,
+      "source": "https://www.elecdirect.fr/tableaux-electriques-schneider/3292-schneider-resi9-coffret-18m-4r-ref-r9h18404-3606480927980.html",
+      "status": "verified"
+    }
+  }
+}

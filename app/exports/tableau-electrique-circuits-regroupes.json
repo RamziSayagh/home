@@ -1,0 +1,327 @@
+{
+  "schemaVersion": 2,
+  "catalogVersion": "resi9-xe-2026-10-24-v1",
+  "name": "Tableau de la maison",
+  "capacity": 13,
+  "rows": [
+    {
+      "id": "row-1",
+      "name": "Rangée 1",
+      "distributor": "",
+      "distributions": []
+    },
+    {
+      "id": "row-2",
+      "name": "Rangée 2",
+      "distributor": ""
+    },
+    {
+      "id": "row-3",
+      "name": "Rangée 3",
+      "distributor": ""
+    },
+    {
+      "id": "e1751298-5d58-49a8-8663-aaeec3a94eea",
+      "name": "Rangée 4",
+      "distributor": ""
+    }
+  ],
+  "circuits": [
+    {
+      "id": "a90ff491-f22c-4474-a736-865a0613d241",
+      "name": "Eclairage chambre parentale",
+      "room": "Chambre",
+      "floor": "Étage",
+      "usage": "Éclairage",
+      "load": "",
+      "cable": "1,5 mm²"
+    },
+    {
+      "id": "00bcf00b-39a9-4292-965b-e384392a383d",
+      "name": "Prises chambre parentale",
+      "room": "Chambre",
+      "floor": "Étage",
+      "usage": "Prises",
+      "load": "",
+      "cable": "2,5 mm²"
+    },
+    {
+      "id": "501c4617-6600-4c82-87c3-ca7feea15f03",
+      "name": "Volet roulant chambre parentale",
+      "room": "Chambre",
+      "floor": "Étage",
+      "usage": "Circuit spécialisé · Volet roulant",
+      "load": "",
+      "cable": "1,5 mm²"
+    },
+    {
+      "id": "4f21980e-92d3-4db8-aeb8-cefc25e21747",
+      "name": "Eclairage salle de bain parentale",
+      "room": "Salle de bains",
+      "floor": "Étage",
+      "usage": "Éclairage",
+      "load": "",
+      "cable": "1,5 mm²"
+    },
+    {
+      "id": "481abf4f-23a2-410c-9463-13d1b550eab5",
+      "name": "Prises salle de bain parentale",
+      "room": "Salle de bains",
+      "floor": "Étage",
+      "usage": "Prises",
+      "load": "",
+      "cable": "2,5 mm²"
+    },
+    {
+      "id": "76acff4c-946d-4232-9544-754c6f0f2ffb",
+      "name": "Volet roulant salle de bain parentale",
+      "room": "Salle de bains",
+      "floor": "Étage",
+      "usage": "Circuit spécialisé · Volet roulant",
+      "load": "",
+      "cable": "1,5 mm²"
+    },
+    {
+      "id": "c55741bf-c33a-46c7-8c9f-7d4062462f34",
+      "name": "Prises chambre ouest",
+      "room": "Chambre",
+      "floor": "Étage",
+      "usage": "Prises",
+      "load": "",
+      "cable": ""
+    }
+  ],
+  "devices": [
+    {
+      "id": "94afb7a7-8e9b-421d-8e86-bc18bb90c90f",
+      "reference": "R9ERA263",
+      "rowId": "row-1",
+      "slot": 0,
+      "label": "",
+      "circuitId": "",
+      "upstreamId": ""
+    },
+    {
+      "id": "17fafe94-6300-4574-93c1-8533bc4da7b0",
+      "reference": "R9EFC616",
+      "rowId": "row-1",
+      "slot": 3,
+      "label": "",
+      "circuitId": "",
+      "upstreamId": "94afb7a7-8e9b-421d-8e86-bc18bb90c90f"
+    },
+    {
+      "id": "038bbd73-48a5-4a9d-a01a-4f9ccf35df43",
+      "reference": "R9ERA263",
+      "rowId": "row-2",
+      "slot": 0,
+      "label": "",
+      "circuitId": "",
+      "upstreamId": ""
+    },
+    {
+      "id": "684afbe9-0e1d-48bd-8afe-fb289e49ec50",
+      "reference": "R9ERA263",
+      "rowId": "row-3",
+      "slot": 0,
+      "label": "",
+      "circuitId": "",
+      "upstreamId": ""
+    },
+    {
+      "id": "7e86d5b5-0b3c-4086-a321-de0241ba600c",
+      "reference": "R9EFC632",
+      "rowId": "row-3",
+      "slot": 2,
+      "label": "",
+      "circuitId": "",
+      "upstreamId": ""
+    },
+    {
+      "id": "e34eca31-d29b-4b7c-85db-1896f608e445",
+      "reference": "R9PLC",
+      "rowId": "row-1",
+      "slot": 11,
+      "label": "",
+      "circuitId": "",
+      "upstreamId": ""
+    },
+    {
+      "id": "eccbdce1-2ee4-49d9-bfc3-6e009dbc9b54",
+      "reference": "A9Z61263",
+      "rowId": "e1751298-5d58-49a8-8663-aaeec3a94eea",
+      "slot": 0,
+      "label": "VE",
+      "circuitId": "",
+      "upstreamId": ""
+    },
+    {
+      "id": "6ea5dc46-33f6-4315-8143-2e80d9484516",
+      "reference": "R9EFC632",
+      "rowId": "e1751298-5d58-49a8-8663-aaeec3a94eea",
+      "slot": 4,
+      "label": "Borne VE",
+      "circuitId": "",
+      "upstreamId": ""
+    }
+  ],
+  "accessories": [],
+  "communication": {
+    "enabled": true,
+    "reference": "",
+    "location": "",
+    "grade": "",
+    "ports": [],
+    "switchPorts": 0,
+    "box": false,
+    "optical": false,
+    "dti": false
+  },
+  "gtl": {
+    "units": [
+      {
+        "id": "30dcebc7-3929-497a-bf7f-5805dbccb08b",
+        "reference": "R9HKT13",
+        "quantity": 1,
+        "accessories": [
+          {
+            "reference": "R9H13535",
+            "quantity": 1
+          }
+        ]
+      },
+      {
+        "id": "62b3f22e-0855-4040-9259-a1a255745ea0",
+        "reference": "R9HKT18",
+        "quantity": 1,
+        "accessories": []
+      }
+    ],
+    "placements": {
+      "primary": "30dcebc7-3929-497a-bf7f-5805dbccb08b",
+      "secondary": "62b3f22e-0855-4040-9259-a1a255745ea0",
+      "communication": "30dcebc7-3929-497a-bf7f-5805dbccb08b"
+    }
+  },
+  "secondPanel": {
+    "schemaVersion": 2,
+    "catalogVersion": "resi9-xe-2026-10-24-v1",
+    "name": "Tableau secondaire",
+    "capacity": 18,
+    "rows": [
+      {
+        "id": "row-1",
+        "name": "Suite parentale",
+        "distributor": "",
+        "distributions": [
+          {
+            "id": "86892561-196a-4d3f-932f-0db10958f871",
+            "reference": "R9EXHS13",
+            "slot": 0
+          }
+        ]
+      },
+      {
+        "id": "row-2",
+        "name": "Rangée 2",
+        "distributor": ""
+      },
+      {
+        "id": "row-3",
+        "name": "Rangée 3",
+        "distributor": "R9EXHC18"
+      },
+      {
+        "id": "74236d4a-c6be-4e16-854a-2a566373a668",
+        "name": "Rangée 4",
+        "distributor": ""
+      }
+    ],
+    "circuits": [],
+    "devices": [
+      {
+        "id": "9e1e94f3-bba7-493a-803f-7931b4015616",
+        "reference": "R9ERA263",
+        "rowId": "row-1",
+        "slot": 0,
+        "label": "",
+        "circuitId": "",
+        "upstreamId": ""
+      },
+      {
+        "id": "8a8e5a9d-1d51-40ba-be16-ebee63a3d21d",
+        "reference": "R9ERA263",
+        "rowId": "row-2",
+        "slot": 0,
+        "label": "",
+        "circuitId": "",
+        "upstreamId": ""
+      },
+      {
+        "id": "fb6036f4-6b6b-46a6-9a23-ab637a250a1a",
+        "reference": "R9ERA263",
+        "rowId": "row-3",
+        "slot": 0,
+        "label": "",
+        "circuitId": "",
+        "upstreamId": ""
+      },
+      {
+        "id": "c5023306-f58c-4b76-ab29-549239df4042",
+        "reference": "R9ERA263",
+        "rowId": "74236d4a-c6be-4e16-854a-2a566373a668",
+        "slot": 0,
+        "label": "",
+        "circuitId": "",
+        "upstreamId": ""
+      },
+      {
+        "id": "fd2110d9-63d2-4001-b23a-f113a3534602",
+        "reference": "R9EFC616",
+        "rowId": "row-1",
+        "slot": 2,
+        "label": "",
+        "circuitId": "",
+        "upstreamId": ""
+      },
+      {
+        "id": "df1cb932-8a1b-4a0a-8844-7e2a3fe1891a",
+        "reference": "R9EFC610",
+        "rowId": "row-1",
+        "slot": 6,
+        "label": "",
+        "circuitId": "",
+        "upstreamId": ""
+      },
+      {
+        "id": "c980ec6e-ea48-431a-9fbb-0827fe3f557a",
+        "reference": "R9EFC616",
+        "rowId": "row-1",
+        "slot": 3,
+        "label": "",
+        "circuitId": "",
+        "upstreamId": ""
+      },
+      {
+        "id": "8a4f94dc-1fee-4865-8e00-dd9d3fab9f35",
+        "reference": "R9EFC610",
+        "rowId": "row-1",
+        "slot": 7,
+        "label": "",
+        "circuitId": "",
+        "upstreamId": ""
+      },
+      {
+        "id": "c37fd02c-2442-4aca-824f-1958a21dbd45",
+        "reference": "R9EFC602",
+        "rowId": "row-1",
+        "slot": 10,
+        "label": "",
+        "circuitId": "",
+        "upstreamId": ""
+      }
+    ],
+    "accessories": []
+  },
+  "sharedCircuits": true
+}
