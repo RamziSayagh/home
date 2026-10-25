@@ -6,6 +6,7 @@ async function openEditor(page: Page) {
   page.on("pageerror", (error) => console.error("Browser error:", error.message));
   page.on("console", (message) => { if (message.type() === "error") console.error("Browser console:", message.text()); });
   await page.goto("/te");
+  await page.getByRole("button", { name: "Disjoncteurs", exact: true }).click();
   await expect(page.getByRole("button", { name: "Ajouter Disjoncteur 16 A · XE", exact: true })).toBeVisible();
 }
 async function drag(page: Page, source: Locator, destination: Locator) {
@@ -72,7 +73,9 @@ test("edit two visible panels independently, restore, export, import and undo re
 test("add, assign a circuit and protection, persist, export, import and undo", async ({ page }) => {
   const errors: string[] = []; page.on("pageerror", (e) => errors.push(e.message));
   await openEditor(page);
+  await page.getByRole("button", { name: "Différentiels", exact: true }).click();
   await page.getByRole("button", { name: "Ajouter Différentiel 63 A · type A", exact: true }).click();
+  await page.getByRole("button", { name: "Disjoncteurs", exact: true }).click();
   await page.getByRole("button", { name: "Ajouter Disjoncteur 16 A · XE", exact: true }).click();
   await page.getByLabel("Nom du circuit", { exact: true }).fill("Prises du salon");
   await page.getByRole("button", { name: "+ Ajouter un circuit", exact: true }).click();
@@ -153,7 +156,9 @@ test("actual mouse drag from catalog, cross-row move, collision rejection and ca
 
 test("accessible position controls reject overlap and shrinking occupied rows", async ({ page }) => {
   await openEditor(page);
+  await page.getByRole("button", { name: "Différentiels", exact: true }).click();
   await page.getByRole("button", { name: "Ajouter Différentiel 63 A · type A", exact: true }).click();
+  await page.getByRole("button", { name: "Disjoncteurs", exact: true }).click();
   await page.getByRole("button", { name: "Ajouter Disjoncteur 16 A · XE", exact: true }).click();
   await page.getByLabel("Position de départ").fill("2");
   await page.getByRole("button", { name: "Déplacer l’appareil →", exact: true }).click();
@@ -186,7 +191,7 @@ test("corrupt saved data is preserved until explicit replacement", async ({ page
 test("storage write failures are visible without breaking the editor", async ({ page }) => {
   await page.addInitScript(() => { Storage.prototype.setItem = () => { throw new DOMException("Quota exceeded", "QuotaExceededError"); }; });
   await openEditor(page);
-  await expect(page.getByText("Sauvegarde indisponible · exportez le JSON", { exact: false })).toBeVisible();
+  await expect(page.getByText("Sauvegarde locale indisponible · exportez le JSON", { exact: false })).toBeVisible();
   await page.getByRole("button", { name: "Ajouter Disjoncteur 16 A · XE", exact: true }).click();
   await expect(page.locator(".te-device")).toHaveCount(1);
 });

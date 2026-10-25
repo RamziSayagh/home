@@ -12,10 +12,11 @@ import DistributionIllustration, { DistributionVisualGuide } from "./distributio
 import SupplierPrice from "./supplier-price";
 import DistributionDetails from "./distribution-details";
 import { SUPPLIERS, comparableSuppliersBudget, formatPrice, materialBudget, materialsCsv, supplierPrice } from "../lib/pricing";
-import { useEffect, useReducer, useRef, useState, type CSSProperties, type FormEvent, type ReactNode } from "react";
+import { useReducer, useRef, useState, type CSSProperties, type FormEvent, type ReactNode } from "react";
+import { useSharedProject } from "../lib/use-shared-project";
 import { DndContext, DragOverlay, KeyboardSensor, MouseSensor, TouchSensor, pointerWithin, rectIntersection, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent, type DragOverEvent, type DragStartEvent } from "@dnd-kit/core";
 import { DISTRIBUTORS, PRODUCTS, PRODUCT_BY_REF, enclosureReference, type Product } from "../data/catalog";
-import { distributionPlacementError, firstFreeDistributionSlot, rowDistributions, deviceCircuitIds, removeCircuit as unlinkCircuit, supportsTwoDepartures, emptyCommunication, emptyProject, firstFreeSlot, historyReducer, materialList, parseProject, placementError, projectChecks, removeDevice, resizeProject, STORAGE_KEY, uid, validateProject, type Circuit, type Device, type Project } from "../lib/model";
+import { distributionPlacementError, firstFreeDistributionSlot, rowDistributions, deviceCircuitIds, removeCircuit as unlinkCircuit, supportsTwoDepartures, emptyCommunication, emptyProject, firstFreeSlot, historyReducer, materialList, parseProject, placementError, projectChecks, removeDevice, resizeProject, uid, validateProject, type Circuit, type Device, type Project } from "../lib/model";
 
 type DragItem = { reference: string; deviceId?: string; panelIndex?: number; type?: "distribution"; distributionId?: string; rowId?: string };
 type Target = { rowId: string; slot: number; panelIndex: number; type?: "distribution" };
@@ -68,10 +69,8 @@ export default function PanelEditor() {
   const project = activePanel === 1 ? workspace.secondPanel! : workspace;
   const panels = workspace.secondPanel ? [workspace, workspace.secondPanel] : [workspace];
   function selectPanel(index: number) { setSelectedPanel(index); setSelectedId(""); setSelectedDistribution(null); setAddRowId(""); }
-  const [ready, setReady] = useState(false);
-  const [saveBlocked, setSaveBlocked] = useState(false);
-  const [saveStatus, setSaveStatus] = useState("Chargement…");
   const [notice, setNotice] = useState("Glissez un appareil sur une rangée, ou utilisez « Ajouter ».");
+  const { ready, saveBlocked, setSaveBlocked, saveStatus, setSaveStatus, conflict } = useSharedProject(workspace, dispatch, setNotice);
   const [selectedId, setSelectedId] = useState("");
   const [selectedDistribution, setSelectedDistribution] = useState<DistributionSelection | null>(null);
   const [query, setQuery] = useState("");
@@ -83,43 +82,6 @@ export default function PanelEditor() {
   const fileInput = useRef<HTMLInputElement>(null);
   const distributionGrabOffset = useRef(0);
   const sensors = useSensors(useSensor(MouseSensor, { activationConstraint: { distance: 7 } }), useSensor(TouchSensor, { activationConstraint: { delay: 220, tolerance: 7 } }), useSensor(KeyboardSensor));
-
-  useEffect(() => {
-    let cancelled = false;
-    // Defer restoration until after hydration; never autosave over an unread project.
-    queueMicrotask(() => {
-      if (cancelled) return;
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) { dispatch({ type: "restore", project: parseProject(saved) }); setNotice("Votre tableau a été restauré depuis ce navigateur."); }
-        setSaveStatus("Sauvegarde locale active");
-      } catch (error) {
-        setSaveBlocked(true); setSaveStatus("Sauvegarde suspendue");
-        setNotice(`Restauration impossible : ${error instanceof Error ? error.message : "stockage inaccessible"} Les données existantes sont conservées. Vous pouvez importer une sauvegarde ou exporter votre travail.`);
-      }
-      setReady(true);
-    });
-    return () => { cancelled = true; };
-  }, []);
-
-  useEffect(() => {
-    if (!ready || saveBlocked) return;
-    const save = () => {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(workspace)); setSaveStatus("Enregistré dans ce navigateur"); }
-      catch { setSaveBlocked(true); setSaveStatus("Sauvegarde indisponible · exportez le JSON"); }
-    };
-    const onVisibilityChange = () => { if (document.visibilityState === "hidden") save(); };
-    const timer = setTimeout(save, 350);
-    // A full reload does not run React cleanup: flush explicitly on pagehide.
-    window.addEventListener("pagehide", save);
-    document.addEventListener("visibilitychange", onVisibilityChange);
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener("pagehide", save);
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(workspace)); } catch { /* The visible save path reports failures. */ }
-    };
-  }, [workspace, ready, saveBlocked]);
 
   const selected = project.devices.find((d) => d.id === selectedId);
   const selectedProduct = selected ? PRODUCT_BY_REF[selected.reference] : null;
@@ -320,6 +282,7 @@ export default function PanelEditor() {
           <button disabled={!history.future.length} onClick={() => { dispatch({ type: "redo" }); setNotice("Modification rétablie."); }} aria-label="Rétablir la modification">↷ <span>Rétablir</span></button>
           <button onClick={() => fileInput.current?.click()}>Importer</button><input className="te-file-input" ref={fileInput} type="file" accept=".json,application/json" aria-label="Importer un projet JSON" onChange={(e) => void importFile(e.target.files?.[0])} />
           <button onClick={() => { download(JSON.stringify(workspace, null, 2), "tableau-electrique.json", "application/json"); setNotice("Projet exporté au format JSON."); }}>Exporter JSON ↓</button>
+          {conflict ? <button onClick={() => download(JSON.stringify(conflict, null, 2), "tableau-electrique-copie-precedente.json", "application/json")}>Exporter ma copie précédente</button> : null}
           <button className="te-primary" onClick={() => window.print()}>Imprimer ↗</button>
         </div></div>
         {saveBlocked ? <div className="te-storage-alert">La sauvegarde locale est suspendue. Exportez votre travail pour le conserver. <button onClick={() => { if (window.confirm("Autoriser la sauvegarde du tableau courant ? Les anciennes données locales seront remplacées.")) { setSaveBlocked(false); setSaveStatus("Sauvegarde locale active"); } }}>Reprendre la sauvegarde</button></div> : null}
@@ -410,7 +373,7 @@ export default function PanelEditor() {
           </section>
           <section hidden={view !== "checks"} className="te-record-content te-print-section"><h2>Les points à vérifier</h2><p className="te-muted">Ce suivi repère les informations manquantes. Il ne calcule pas la conformité électrique.</p><ul className="te-checks">{checks.map((message, i) => <li key={i}><span aria-hidden="true">!</span>{message}</li>)}</ul></section>
         </section>
-        <div className="te-bottom-note"><p><strong>Un outil pour préparer votre projet.</strong> L’alimentation réelle, l’assemblage XE et le dimensionnement restent à confirmer avec votre électricien. Vos données sont enregistrées uniquement dans ce navigateur ; exportez le JSON pour les conserver ailleurs.</p><button className="te-reset" onClick={() => { if (window.confirm("Créer un tableau vide ? Vous pourrez annuler cette action. Pensez à exporter votre projet.")) { commit(emptyProject(), "Nouveau tableau créé."); setSelectedId(""); } }}>Nouveau tableau</button></div>
+        <div className="te-bottom-note"><p><strong>Un outil pour préparer votre projet.</strong> L’alimentation réelle, l’assemblage XE et le dimensionnement restent à confirmer avec votre électricien. Lorsque le stockage partagé est configuré, votre configuration se synchronise automatiquement entre les appareils. L’accès est libre, sans compte ni mot de passe. Une copie locale et l’export JSON restent disponibles.</p><button className="te-reset" onClick={() => { if (window.confirm("Créer un tableau vide ? Vous pourrez annuler cette action. Pensez à exporter votre projet.")) { commit(emptyProject(), "Nouveau tableau créé."); setSelectedId(""); } }}>Nouveau tableau</button></div>
       </>}
     </main><footer className="te-footer"><span>MAISON 1973</span><span>Un projet de rénovation, circuit par circuit.</span></footer>
   </div>;
