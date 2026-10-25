@@ -26,7 +26,7 @@ export function useSharedProject(workspace: Project, dispatch: Dispatch<HistoryA
     let initialized = false;
     let initial: Project | null = null;
     let pending = false;
-    const state = { revision: 0, baseline: "", connected: false, busy: false };
+    const state = { revision: 0, baseline: "", connected: false, localOnly: false, busy: false };
     async function read() {
       const response = await fetch(endpoint, { cache: "no-store", signal: AbortSignal.timeout(10000) });
       if (!response.ok) throw new Error((await response.json()).error);
@@ -49,7 +49,7 @@ export function useSharedProject(workspace: Project, dispatch: Dispatch<HistoryA
       markSynced(remote.project, remote.revision);
     }
     async function tick() {
-      if (state.busy || stopped || document.visibilityState === "hidden") return;
+      if (state.busy || stopped) return;
       state.busy = true;
       try {
         const { workspace: local, saveBlocked: blocked } = current();
@@ -76,32 +76,23 @@ export function useSharedProject(workspace: Project, dispatch: Dispatch<HistoryA
             signal: AbortSignal.timeout(10000), keepalive: serialized.length < 60000,
           });
           if (stopped) return;
-          if (response.status === 409) {
-            const remote = await read();
-            if (stopped) return;
-            accept(remote, current().workspace, true);
-          } else {
-            if (!response.ok) throw new Error("storage_unavailable");
-            const remote: Remote = await response.json();
-            markSynced(local, remote.revision);
-          }
-        } else {
-          const remote = await read();
-          if (stopped) return;
-          // Editing can continue while the request is in flight. Preserve that work.
-          if (remote.revision !== state.revision) {
-            const latest = current().workspace;
-            accept(remote, latest, JSON.stringify(latest) !== state.baseline);
-          }
+          if (!response.ok) throw new Error("storage_unavailable");
+          const remote: Remote = await response.json();
+          markSynced(local, remote.revision);
         }
         setSaveStatus("À jour · sauvegarde partagée");
       } catch (error) {
-        if (!stopped) setSaveStatus(error instanceof Error && error.message === "not_configured"
+        const unconfigured = error instanceof Error && error.message === "not_configured";
+        if (unconfigured) state.localOnly = true;
+        if (!stopped) setSaveStatus(unconfigured
           ? "Sauvegarde locale · stockage Vercel à configurer"
-          : "Hors connexion · modifications conservées sur cet appareil");
+          : "Connexion à la sauvegarde partagée…");
       } finally {
         state.busy = false;
-        if (!stopped && !initialized) { initialized = true; setReady(true); }
+        // Never expose an editable temporary project while a configured shared
+        // project is still loading. Otherwise a delayed first response could
+        // replace an edit made against the empty initial project.
+        if (!stopped && !initialized && (state.connected || state.localOnly)) { initialized = true; setReady(true); }
       }
     }
     async function start() {
@@ -128,20 +119,13 @@ export function useSharedProject(workspace: Project, dispatch: Dispatch<HistoryA
       await tick();
     }
     void start();
-    const interval = window.setInterval(() => void tick(), 5000);
-    const onFocus = () => void tick();
-    window.addEventListener("focus", onFocus);
-    window.addEventListener("online", onFocus);
-    document.addEventListener("visibilitychange", onFocus);
-    // Local edits trigger the same serialized synchronization loop.
-    window.addEventListener("te-project-change", onFocus);
+    // The shared project is read once on page load. Only a local edit may
+    // trigger a subsequent write; focus and background polling never reload it.
+    const onLocalChange = () => void tick();
+    window.addEventListener("te-project-change", onLocalChange);
     return () => {
       stopped = true;
-      window.clearInterval(interval);
-      window.removeEventListener("focus", onFocus);
-      window.removeEventListener("online", onFocus);
-      document.removeEventListener("visibilitychange", onFocus);
-      window.removeEventListener("te-project-change", onFocus);
+      window.removeEventListener("te-project-change", onLocalChange);
     };
   }, [dispatch, setNotice]);
 

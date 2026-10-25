@@ -13,7 +13,6 @@ function sharedStorage(project: Project | null = null) {
         if (offline) return route.fulfill({ status: 503, json: { error: "storage_unavailable" } });
         if (route.request().method() === "GET") return route.fulfill({ json: value });
         const body = route.request().postDataJSON();
-        if (body.revision !== value.revision) return route.fulfill({ status: 409, json: { error: "conflict" } });
         value = { revision: value.revision + 1, project: parseProject(JSON.stringify(body.project)) };
         return route.fulfill({ json: value });
       });
@@ -55,34 +54,15 @@ test("the shared version takes priority over a stale browser copy", async ({ con
   expect(storage.value().revision).toBe(1);
 });
 
-test("offline edits retry automatically after reconnection", async ({ context, page }) => {
+test("each local edit overwrites a newer shared version", async ({ context, page }) => {
   const storage = sharedStorage(emptyProject());
   await storage.connect(context);
   await page.goto("/te");
   await expect(page.getByLabel("Nom du projet")).toBeVisible();
-  storage.offline(true);
-  await page.getByLabel("Nom du projet").fill("Travail hors connexion");
-  await expect(page.locator(".te-save")).toContainText("Hors connexion");
-  await expect.poll(() => page.evaluate(key => JSON.parse(localStorage.getItem(key)!).name, STORAGE_KEY)).toBe("Travail hors connexion");
-  storage.offline(false);
-  await page.evaluate(() => window.dispatchEvent(new Event("online")));
-  await expect.poll(() => storage.value().project?.name).toBe("Travail hors connexion");
+  storage.update({ ...emptyProject(), name: "Modification distante" });
+  await page.getByLabel("Nom du projet").fill("Modification locale");
+  await expect.poll(() => storage.value().project?.name).toBe("Modification locale");
   await expect(page.locator(".te-save")).toContainText("À jour");
-});
-
-test("concurrent changes preserve a downloadable local copy and load the newer shared revision", async ({ context, page }) => {
-  const storage = sharedStorage(emptyProject());
-  await storage.connect(context);
-  await page.goto("/te");
-  await expect(page.getByLabel("Nom du projet")).toBeVisible();
-  storage.update({ ...emptyProject(), name: "Autre appareil" });
-  await page.getByLabel("Nom du projet").fill("Ma copie en conflit");
-  await expect(page.getByLabel("Nom du projet")).toHaveValue("Autre appareil");
-  const download = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Exporter ma copie précédente" }).click();
-  expect((await download).suggestedFilename()).toContain("copie-precedente");
-  expect(await page.evaluate(key => JSON.parse(localStorage.getItem(`${key}.conflict`)!).name, STORAGE_KEY)).toBe("Ma copie en conflit");
-  expect(storage.value().project?.name).toBe("Autre appareil");
 });
 
 test("unconfigured shared storage preserves the existing local workflow", async ({ page, context }) => {
@@ -94,7 +74,7 @@ test("unconfigured shared storage preserves the existing local workflow", async 
   await expect(page.locator(".te-save")).toContainText("stockage Vercel à configurer");
 });
 
-test("pending offline changes survive reopening when the shared baseline has not changed", async ({ context, page }) => {
+test("a saved local project is published when no shared project exists", async ({ context, page }) => {
   const original = parseProject(JSON.stringify(emptyProject()));
   const storage = sharedStorage(original);
   await storage.connect(context);

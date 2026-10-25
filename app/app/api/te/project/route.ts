@@ -48,16 +48,14 @@ export async function PUT(request: Request) {
   }
   try {
     await initialize(sql);
-    // A single UPSERT writes only when the stored revision is the one the browser read.
+    // A local edit is authoritative: write it atomically even if another client
+    // saved after this browser loaded the page.
     const rows = await sql.query(`INSERT INTO ${table} (id, revision, project)
-      SELECT 1, $1, $2::jsonb WHERE $3 = 0
+      VALUES (1, 1, $1::jsonb)
       ON CONFLICT (id) DO UPDATE SET revision = ${table}.revision + 1, project = EXCLUDED.project, updated_at = NOW()
-      WHERE ${table}.revision = $3
-      RETURNING revision, updated_at`, [input.revision + 1, JSON.stringify(input.project), input.revision]) as { revision: number; updated_at: string }[];
+      RETURNING revision, updated_at`, [JSON.stringify(input.project)]) as { revision: number; updated_at: string }[];
     const saved = rows[0];
-    return saved
-      ? Response.json({ revision: Number(saved.revision), updatedAt: saved.updated_at, project: input.project }, { headers })
-      : Response.json({ error: "conflict" }, { status: 409, headers });
+    return Response.json({ revision: Number(saved.revision), updatedAt: saved.updated_at, project: input.project }, { headers });
   } catch {
     return Response.json({ error: "storage_unavailable" }, { status: 503, headers });
   }

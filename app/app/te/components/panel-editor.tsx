@@ -75,6 +75,10 @@ export default function PanelEditor() {
   const [selectedDistribution, setSelectedDistribution] = useState<DistributionSelection | null>(null);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("rcd");
+  const [circuitQuery, setCircuitQuery] = useState("");
+  const [circuitFloor, setCircuitFloor] = useState("");
+  const [circuitUsage, setCircuitUsage] = useState("");
+  const [circuitAssignment, setCircuitAssignment] = useState<"all" | "assigned" | "unassigned">("all");
   const [addRowId, setAddRowId] = useState("");
   const [view, setView] = useState<View>("circuits");
   const [activeDrag, setActiveDrag] = useState<DragItem | null>(null);
@@ -95,6 +99,18 @@ export default function PanelEditor() {
   const distributionRow = selectedDistribution?.panelIndex === activePanel ? project.rows.find(row => row.id === selectedDistribution.rowId) : undefined;
   const distributionSegment = distributionRow ? rowDistributions(distributionRow).find(segment => segment.id === selectedDistribution?.id) : undefined;
   const distributionProduct = selectedDistribution?.panelIndex === activePanel && (!selectedDistribution.id || distributionSegment) ? DISTRIBUTORS.find(p => p.reference === (distributionSegment?.reference ?? selectedDistribution.reference)) : undefined;
+  const circuitFloors = [...new Set(workspace.circuits.map(circuit => circuit.floor).filter(Boolean))];
+  const circuitUsages = [...new Set(workspace.circuits.map(circuit => circuit.usage).filter(Boolean))];
+  const normalizedCircuitQuery = circuitQuery.trim().toLocaleLowerCase("fr");
+  const circuitMatches = (circuit: Circuit) => {
+    const assigned = panels.some(panel => panel.devices.some(device => deviceCircuitIds(device).includes(circuit.id)));
+    return (!normalizedCircuitQuery || `${circuit.name} ${circuit.room} ${circuit.floor} ${circuit.usage}`.toLocaleLowerCase("fr").includes(normalizedCircuitQuery))
+      && (!circuitFloor || circuit.floor === circuitFloor)
+      && (!circuitUsage || circuit.usage === circuitUsage)
+      && (circuitAssignment === "all" || (circuitAssignment === "assigned" ? assigned : !assigned));
+  };
+  const filteredCircuits = workspace.circuits.flatMap((circuit, index) => circuitMatches(circuit) ? [{ circuit, index }] : []);
+  const hasCircuitFilters = !!(circuitQuery || circuitFloor || circuitUsage || circuitAssignment !== "all");
 
   function selectDistribution(selection: DistributionSelection) {
     setSelectedPanel(selection.panelIndex);
@@ -357,14 +373,24 @@ export default function PanelEditor() {
           <section hidden={view !== "circuits"} className="te-record-content te-print-section"><h2>Les circuits de la maison</h2><p className="te-muted">Liste générale de la maison. Les circuits restent visibles quel que soit le tableau sélectionné. Affectez-les ensuite à un disjoncteur.</p>
             <form onSubmit={addCircuit} className="te-circuit-form"><Field label="Nom du circuit"><input name="name" required maxLength={160} placeholder="Ex. Prises du salon" /></Field><Field label="Pièce"><input name="room" maxLength={160} placeholder="Ex. Salon" list="te-rooms" /></Field><Field label="Niveau"><select name="floor"><option value="">À préciser</option><option>Sous-sol</option><option>Rez-de-chaussée</option><option>Étage</option><option>Grenier</option><option>Extérieur</option><option>Autre</option></select></Field><Field label="Usage"><CircuitUsage /></Field><button className="te-primary" type="submit">+ Ajouter un circuit</button></form>
             <datalist id="te-rooms">{["Entrée", "Bureau", "Salon", "Cuisine", "Salle à manger", "Chambre", "Salle d’eau", "Salle de bains", "Palier", "Extérieur"].map((room) => <option key={room} value={room} />)}</datalist>
-            {!workspace.circuits.length ? <div className="te-empty-inline">Votre inventaire commence ici. Ajoutez le premier circuit de la maison.</div> : <CircuitReorderList onMove={moveCircuit}>{workspace.circuits.map((circuit, index) => {
+            {!workspace.circuits.length ? <div className="te-empty-inline">Votre inventaire commence ici. Ajoutez le premier circuit de la maison.</div> : <>
+              <div className="te-circuit-filters" aria-label="Filtrer les circuits">
+                <Field label="Rechercher"><input type="search" value={circuitQuery} onChange={(event) => setCircuitQuery(event.target.value)} placeholder="Nom, pièce, usage…" /></Field>
+                <Field label="Niveau"><select value={circuitFloor} onChange={(event) => setCircuitFloor(event.target.value)}><option value="">Tous les niveaux</option>{circuitFloors.map(floor => <option key={floor} value={floor}>{floor}</option>)}</select></Field>
+                <Field label="Usage"><select value={circuitUsage} onChange={(event) => setCircuitUsage(event.target.value)}><option value="">Tous les usages</option>{circuitUsages.map(usage => <option key={usage} value={usage}>{usage}</option>)}</select></Field>
+                <div className="te-circuit-assignment" role="group" aria-label="Affectation"><span>Affectation</span>{([ ["all", "Tous"], ["unassigned", "Non affectés"], ["assigned", "Affectés"] ] as const).map(([value, label]) => <button key={value} type="button" aria-pressed={circuitAssignment === value} onClick={() => setCircuitAssignment(value)}>{label}</button>)}</div>
+                {hasCircuitFilters ? <button type="button" className="te-circuit-filter-reset" onClick={() => { setCircuitQuery(""); setCircuitFloor(""); setCircuitUsage(""); setCircuitAssignment("all"); }}>Réinitialiser</button> : null}
+              </div>
+              <p className="te-circuit-filter-count" role="status">{filteredCircuits.length} circuit{filteredCircuits.length > 1 ? "s" : ""} affiché{filteredCircuits.length > 1 ? "s" : ""} sur {workspace.circuits.length}</p>
+              {!filteredCircuits.length ? <div className="te-empty-inline">Aucun circuit ne correspond à ces filtres.</div> : <CircuitReorderList onMove={moveCircuit}>{filteredCircuits.map(({ circuit, index }) => {
               const assignmentPanel = panels.findIndex(panel => panel.devices.some(device => deviceCircuitIds(device).includes(circuit.id)));
               const assignmentBoard = panels[assignmentPanel];
               const device = assignmentBoard?.devices.find(device => deviceCircuitIds(device).includes(circuit.id));
               return <CircuitDropRow key={circuit.id} id={circuit.id} room={circuit.room}><details className="te-circuit"><summary><CircuitDragHandle id={circuit.id} name={circuit.name} /><span className="te-circuit-num">C{String(index + 1).padStart(2, "0")}</span><span className="te-circuit-heading"><strong>{circuit.name || "Circuit sans nom"}</strong>{circuit.usage === RELAY_LIGHTING_USAGE ? <span className="te-circuit-tl" title="Éclairage commandé par télérupteur">TL · Télérupteur</span> : null}<small className="te-circuit-description">{[circuit.usage, circuit.load, circuit.cable].filter(Boolean).join(" · ")}</small></span><span>{[circuit.room, circuit.floor].filter(Boolean).join(" · ")}</span><em className={device ? "te-circuit-assigned" : "te-circuit-unassigned"}>{device ? `Tableau ${assignmentPanel + 1} · ${PRODUCT_BY_REF[device.reference].short} · ${assignmentBoard.rows.find((r) => r.id === device.rowId)?.name} / ${device.slot + 1}` : "⚠ Non affecté"}</em><span className="te-circuit-actions"><button type="button" aria-label={`Dupliquer le circuit ${circuit.name}`} disabled={workspace.circuits.length >= 600} onClick={(event) => { event.preventDefault(); event.stopPropagation(); duplicateCircuit(circuit.id); }}>Dupliquer</button></span><span aria-hidden="true">＋</span></summary><div className="te-circuit-fields">
                 <Field label="Nom"><input value={circuit.name} maxLength={160} onChange={(e) => editCircuit(circuit.id, { name: e.target.value })} /></Field><Field label="Pièce"><input value={circuit.room} maxLength={160} onChange={(e) => editCircuit(circuit.id, { room: e.target.value })} /></Field><Field label="Niveau"><input value={circuit.floor} maxLength={160} onChange={(e) => editCircuit(circuit.id, { floor: e.target.value })} /></Field><Field label="Usage"><CircuitUsage value={circuit.usage} onChange={(usage) => editCircuit(circuit.id, { usage })} /></Field><Field label="Puissance connue (saisie libre)"><input value={circuit.load} placeholder="Ex. 2 000 W" maxLength={160} onChange={(e) => editCircuit(circuit.id, { load: e.target.value })} /></Field><Field label="Section du câble"><CableSection value={circuit.cable} onChange={(cable) => editCircuit(circuit.id, { cable })} /></Field><button className="te-danger" onClick={() => removeCircuit(circuit.id)}>Supprimer le circuit</button>
               </div><div className="te-circuit-print">{[circuit.usage, circuit.load, circuit.cable].filter(Boolean).join(" · ")}</div></details></CircuitDropRow>;
-            })}</CircuitReorderList>}
+              })}</CircuitReorderList>}
+            </>}
           </section>
           <section hidden={view !== "materials"} className="te-record-content te-print-section"><div className="te-output-heading"><div><h2>La liste du matériel</h2><p className="te-muted">Prix unitaires TTC Elec44, 123elec et Elecdirect · dates de relevé sur les liens de prix · hors livraison. Les éléments non chiffrés sont exclus de chaque sous-total. Assemblage à vérifier avant commande.</p></div><button onClick={() => download(materialsCsv(materials), "materiel-tableau.csv", "text/csv;charset=utf-8")}>Exporter CSV ↓</button></div>
             <div className="te-table-scroll"><table><thead><tr><th>Référence</th><th>Désignation</th><th>Quantité</th>{SUPPLIERS.map(s => <th key={s.id}>{s.name} TTC</th>)}{SUPPLIERS.map(s => <th key={s.id}>Total {s.name}</th>)}<th>État</th></tr></thead><tbody>{materials.map((m, i) => <tr key={i}><td>{m.source ? <a href={m.source} target="_blank" rel="noreferrer">{m.reference} ↗</a> : m.reference}</td><td>{m.name}</td><td>{m.quantity}</td>{SUPPLIERS.map(s => <td key={s.id}><SupplierPrice referenceCode={m.reference} supplier={s.id} /></td>)}{SUPPLIERS.map(s => { const cents = supplierPrice(m.reference, s.id)?.unitPriceCents; return <td key={s.id} className="te-price-total">{cents == null ? "Non chiffré" : formatPrice(cents * m.quantity)}</td>; })}<td>{m.status}</td></tr>)}</tbody><tfoot>{budgets.map(b => <tr key={b.id}><th colSpan={3 + SUPPLIERS.length}>{b.missingQuantity ? "Sous-total connu TTC" : "Total estimé TTC"} · {b.name}</th>{SUPPLIERS.map(s => <td key={s.id} className="te-price-total">{s.id === b.id ? formatPrice(b.totalCents) : "—"}</td>)}<td>{b.missingQuantity ? `${b.missingQuantity} élément(s) non chiffré(s)` : "Tous les éléments chiffrés"}</td></tr>)}</tfoot></table></div>

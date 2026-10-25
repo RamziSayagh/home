@@ -17,9 +17,9 @@ Official setup instructions: [Vercel Marketplace storage](https://vercel.com/doc
 
 - `GET /api/te/project` reads the shared project; `PUT` validates the existing project schema before writing.
 - The `maison1973_shared_electrical_project` table holds one row (`id = 1`) with the project JSON, revision and update time. Use separate preview/development databases from production to avoid test edits changing the real project.
-- Writes are debounced by 500 ms. Visible pages check for updates every five seconds and on focus, visibility changes and network reconnection. Hidden pages stop polling. This is periodic synchronization, not live collaborative editing.
-- A PostgreSQL UPSERT updates the project only when its revision matches the browser's revision. A stale writer loads the accepted server version and retains its conflicting local project for **Exporter ma copie précédente**. This backup is also retained across browser reloads when local storage works.
-- Local changes are saved immediately to browser storage. Failed network writes retry automatically. Pending changes can resume after reopening when the shared baseline is unchanged; concurrent remote changes retain a local exportable copy. JSON import/export remains available.
+- The shared project is read once when a page opens. Writes are debounced by 500 ms; each local edit atomically replaces the shared project. Pages never poll or refresh from the shared project while they remain open.
+- A PostgreSQL UPSERT increments the revision on every write. The revision is informational; it does not reject stale writers, so the most recently saved local edit wins.
+- Local changes are saved immediately to browser storage. A failed write is reported to the open page and a later local edit can try again. Reopening always loads the then-current shared project; JSON import/export remains available.
 - Without configured storage, the API returns `503 not_configured` and the editor explicitly reports local-only saving. It never claims to be synchronized when a request fails.
 - The status **À jour · sauvegarde partagée** means the last synchronization succeeded. Closing the page before an in-flight save completes can leave a pending local change; reopening that browser resumes synchronization.
 
