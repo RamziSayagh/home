@@ -1,4 +1,4 @@
-export const CATALOG_VERSION = "resi9-xe-2026-10-24-v1";
+export const CATALOG_VERSION = "resi9-xe-2026-10-24-v2";
 export const manufacturerUrl = (reference: string) => `https://www.se.com/fr/fr/product/${reference}/`;
 
 export const GTL_OPTIONS = [
@@ -28,9 +28,10 @@ export type Product = {
   reference: string;
   name: string;
   short: string;
-  kind: "breaker" | "rcd" | "spd" | "impulse";
+  kind: "breaker" | "rcd" | "spd" | "impulse" | "domotics";
   range?: string;
   modules: number;
+  dimensions?: string;
   ratedCurrentA?: number;
   rating: string;
   detail: string;
@@ -56,6 +57,20 @@ export const PRODUCTS: Product[] = [
   { reference: "R9PLC", name: "Parafoudre type 2 · 10 kA", short: "T2", kind: "spd", range: "Resi9 XP PF", modules: 2, rating: "Type 2 · 1P+N · 10 kA", detail: "36 mm · rail DIN · avec accessoires", source: manufacturerUrl("R9PLC"), verifiedAt: "2026-10-24" },
   { reference: "R9PCL216", name: "Télérupteur 16 A · 2NO", short: "TL", kind: "impulse", range: "Resi9 XP TL", modules: 1, rating: "16 A · 2NO · commande 230 V", detail: "18 mm · rail DIN · raccordement à vis", source: manufacturerUrl("R9PCL216"), verifiedAt: "2026-10-24" },
   { reference: "R9PCL2S", name: "Télérupteur silencieux 16 A · 1NO", short: "TLS", kind: "impulse", range: "Resi9 XP TL", modules: 1, rating: "16 A · 1NO · commande 230 V", detail: "18 mm · rail DIN · électronique · à vis", source: manufacturerUrl("R9PCL2S"), verifiedAt: "2026-10-24" },
+  // Shelly Pro devices are independent DIN-rail equipment: placement never validates their wiring or protection.
+  { reference: "SHELLY-PRO-1", name: "Shelly Pro 1", short: "Pro 1", kind: "domotics", range: "Shelly Pro", modules: 1, dimensions: "94 × 19 × 69 mm", rating: "Relais · 1 canal · 16 A", detail: "Contact sec (libre de potentiel), idéal pour remplacer un télérupteur classique.", source: "https://www.shelly.com/collections/professional-devices", verifiedAt: "2026-10-26" },
+  { reference: "SHELLY-PRO-1PM", name: "Shelly Pro 1PM", short: "1PM", kind: "domotics", range: "Shelly Pro", modules: 1, dimensions: "94 × 19 × 69 mm", rating: "Relais · 1 canal · 16 A", detail: "Mesure de consommation intégrée.", source: "https://www.shelly.com/collections/professional-devices", verifiedAt: "2026-10-26" },
+  { reference: "SHELLY-PRO-2", name: "Shelly Pro 2", short: "Pro 2", kind: "domotics", range: "Shelly Pro", modules: 1, dimensions: "94 × 19 × 69 mm", rating: "Relais · 2 canaux · 16 A/canal", detail: "Contacts secs indépendants, 25 A max. au total.", source: "https://www.shelly.com/products/shelly-pro-2", verifiedAt: "2026-10-27" },
+  { reference: "SHELLY-PRO-2PM", name: "Shelly Pro 2PM", short: "2PM", kind: "domotics", range: "Shelly Pro", modules: 1, dimensions: "94 × 19 × 69 mm", rating: "Relais · 2 canaux · 16 A/canal", detail: "Mesure de consommation intégrée.", source: "https://www.shelly.com/products/shelly-pro-2pm", verifiedAt: "2026-10-27" },
+  { reference: "SHELLY-PRO-3", name: "Shelly Pro 3", short: "Pro 3", kind: "domotics", range: "Shelly Pro", modules: 3, dimensions: "94 × 57 × 69 mm", rating: "Relais · 3 canaux · 16 A/canal", detail: "Contacts secs indépendants pour triphasé ou trois zones.", source: "https://www.shelly.com/collections/professional-devices", verifiedAt: "2026-10-26" },
+  { reference: "SHELLY-PRO-4PM", name: "Shelly Pro 4PM", short: "4PM", kind: "domotics", range: "Shelly Pro", modules: 3, dimensions: "94 × 57 × 69 mm", rating: "Relais · 4 canaux · 16 A/canal", detail: "Mesure de consommation et écran couleur en façade.", source: "https://www.shelly.com/collections/professional-devices", verifiedAt: "2026-10-26" },
+  { reference: "SHELLY-PRO-DIMMER-1PM", name: "Shelly Pro Dimmer 1PM", short: "Dim 1", kind: "domotics", range: "Shelly Pro", modules: 1, dimensions: "94 × 19 × 69 mm", rating: "Variateur · 1 circuit", detail: "Variateur de lumière avec mesure de consommation.", source: "https://www.shelly.com/products/shelly-pro-dimmer-1pm", verifiedAt: "2026-10-27" },
+  { reference: "SHELLY-PRO-DIMMER-2PM", name: "Shelly Pro Dimmer 2PM", short: "Dim 2", kind: "domotics", range: "Shelly Pro", modules: 1, dimensions: "94 × 19 × 69 mm", rating: "Variateur · 2 circuits", detail: "Deux circuits indépendants avec mesure de consommation.", source: "https://www.shelly.com/fr/products/shelly-pro-dimmer-2pm", verifiedAt: "2026-10-27" },
+  { reference: "SHELLY-PRO-DIMMER-0-1-10V-PM", name: "Shelly Pro Dimmer 0/1-10V PM", short: "0/1–10", kind: "domotics", range: "Shelly Pro", modules: 1, dimensions: "94 × 19 × 69 mm", rating: "Variateur · 0/1–10 V", detail: "Contrôle de ballasts ou pilotes de luminaires professionnels.", source: "https://www.shelly.com/fr/products/shelly-pro-dimmer-0-1-10v-pm", verifiedAt: "2026-10-27" },
+  { reference: "SHELLY-PRO-RGBWW-PM", name: "Shelly Pro RGBWW PM", short: "RGBWW", kind: "domotics", range: "Shelly Pro", modules: 1, dimensions: "94 × 19 × 69 mm", rating: "LED · 5 canaux", detail: "Gestion avancée des bandeaux LED couleur et blanc.", source: "https://www.shelly.com/products/shelly-pro-rgbww-pm", verifiedAt: "2026-10-27" },
+  { reference: "SHELLY-PRO-DUAL-COVER-SHUTTER-PM", name: "Shelly Pro Dual Cover/Shutter PM", short: "Cover", kind: "domotics", range: "Shelly Pro", modules: 3, dimensions: "96 × 53 × 59 mm", rating: "Volets/stores · 2 moteurs", detail: "Contrôle bidirectionnel avec mesure de puissance.", source: "https://www.shelly.com/fr/products/shelly-pro-dual-cover-shutter-pm", verifiedAt: "2026-10-27" },
+  { reference: "SHELLY-PRO-EM-50", name: "Shelly Pro EM-50", short: "EM-50", kind: "domotics", range: "Shelly Pro", modules: 1, dimensions: "94 × 19 × 69 mm", rating: "Énergie · 2 canaux", detail: "Compteur monophasé livré avec deux pinces de 50 A.", source: "https://www.shelly.com/collections/professional-devices", verifiedAt: "2026-10-26" },
+  { reference: "SHELLY-LAN-SWITCH", name: "Shelly LAN Switch", short: "LAN", kind: "domotics", range: "Shelly", modules: 3, dimensions: "96 × 53 × 59 mm", rating: "Réseau · 5 ports RJ45", detail: "Commutateur réseau alimenté en 230 V pour distribuer Internet dans le tableau.", source: "https://kb.shelly.cloud/knowledge-base/shelly-lan-switch", verifiedAt: "2026-10-26" },
 ];
 
 export const PRODUCT_BY_REF: Record<string, Product> = Object.assign(Object.create(null), Object.fromEntries(PRODUCTS.map((p) => [p.reference, p])));

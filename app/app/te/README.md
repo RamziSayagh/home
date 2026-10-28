@@ -105,6 +105,10 @@ Breaker titles use `Disjoncteur {rating} A · XP` or `Disjoncteur {rating} A · 
 
 The `impulse` category includes R9PCL216 (16 A, 2NO) and R9PCL2S (silent, 16 A, 1NO), both Resi9 XP TL units with 230 V AC control and one 18 mm slot. Product identities are linked to Schneider's catalog; dimensions and control ratings come from Schneider-authored technical sheets. These screw-terminal devices are not labeled as XE plug-on equipment. The editor supports placement, variant changes, labels, persistence and materials. It does not model control wiring or circuit associations for these devices; label the controlled lighting circuit and retain its breaker separately. Relay references cannot serve as upstream differential protection. Additive entries preserve the catalog version and saved projects.
 
+## Home automation
+
+The `Domotique` catalog filter contains the supplied Shelly Pro DIN-rail equipment: relays, dimmers, shutter control, a single-phase energy meter and the LAN Switch. Cards show the supplied description, dimensions and occupied 18 mm modules. The LAN Switch uses its manufacturer-documented 96 × 53 × 59 mm dimensions and a three-module rail footprint derived from its 53 mm width. These products participate in placement, persistence and material export, but never carry circuit or upstream-RCD assignments. Their placement does not establish distribution compatibility, power supply, protective-device sizing or wiring; the editor records this for every placed Shelly item.
+
 ## Communication cabinet
 
 An optional section below the electrical editor plans the communication cabinet independently from electrical DIN rows. Enable it to enter a cabinet reference, location, network grade/category, optical or copper termination, Internet box, switch port count (0–48), and up to 48 RJ45 destinations with room and label. These are generic planning entries without a preselected manufacturer or certified assembly. RJ45 material quantities represent complete links to equip, not a verified bill of individual connectors or cables.

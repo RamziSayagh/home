@@ -1,4 +1,4 @@
-/* eslint-disable @next/next/no-img-element -- Preserve the original plans' intrinsic proportions. */
+﻿/* eslint-disable @next/next/no-img-element -- Preserve the original plans' intrinsic proportions. */
 import { Gallery,GalleryPhoto,RoomMenu } from "./renovation-interactions";
 import Link from "next/link";
 
@@ -126,6 +126,7 @@ export default function Home() {
             <a href="#exterieur">Extérieur</a>
             <Link href="/te">TE</Link>
             <Link href="/achats">Achats</Link>
+            <Link href="/baie">Baie</Link>
             <Link href="/3d">3D</Link>
           </div>
           <RoomMenu>
@@ -145,6 +146,7 @@ export default function Home() {
                 <a href="#exterieur">Extérieurs</a>
                 <Link href="/te">TE</Link>
                 <Link href="/achats">Achats · Articles et matériaux</Link>
+                <Link href="/baie">Baie · Réseau informatique</Link>
                 <Link href="/3d">3D · La maison et son quartier</Link>
               </div>
               <div className="menu-group">
@@ -1188,3 +1190,4 @@ export default function Home() {
     </Gallery>
   );
 }
+

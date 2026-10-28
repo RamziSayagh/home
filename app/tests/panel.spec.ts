@@ -20,6 +20,108 @@ async function drag(page: Page, source: Locator, destination: Locator) {
   await page.mouse.up();
 }
 
+test("two 18-module boards scroll together between the catalogue and inspector", async ({ page }) => {
+  const first = { ...emptyProject(), capacity: 18 };
+  const project = { ...first, secondPanel: { ...emptyProject(), capacity: 18, name: "Garage" } };
+  await page.route("**/api/te/project", (route) => route.fulfill({ json: { revision: 1, project } }));
+  await page.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), { key: STORAGE_KEY, value: project });
+  for (const width of [1100, 1440, 1920]) {
+    await page.setViewportSize({ width, height: 1000 });
+    await page.goto("/te");
+    const boards = page.locator(".te-board-section");
+    await expect(boards).toHaveCount(2);
+    const boxes = await boards.evaluateAll((elements) => elements.map((element) => {
+      const rect = element.getBoundingClientRect();
+      const scroll = element.querySelector(".te-panel-scroll")!;
+      return { x: rect.x, right: rect.right, scrollWidth: scroll.scrollWidth, clientWidth: scroll.clientWidth };
+    }));
+    expect(boxes[1].x).toBeGreaterThanOrEqual(boxes[0].right);
+    for (const box of boxes) expect(box.scrollWidth).toBeLessThanOrEqual(box.clientWidth);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    const scroller = page.getByRole("region", { name: "Tableaux électriques" });
+    const layout = await scroller.evaluate((element) => ({ right: element.getBoundingClientRect().right, scrollWidth: element.scrollWidth, clientWidth: element.clientWidth }));
+    const inspector = await page.getByRole("complementary", { name: "Détails de l’appareil" }).boundingBox();
+    expect(inspector!.x).toBeGreaterThanOrEqual(layout.right);
+    expect(layout.scrollWidth).toBeGreaterThan(layout.clientWidth);
+    await scroller.evaluate((element) => { element.scrollLeft = element.scrollWidth; });
+    expect(await scroller.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
+  }
+});
+
+test("different board capacities use the same module width", async ({ page }) => {
+  const project = { ...emptyProject(), secondPanel: { ...emptyProject(), capacity: 18, name: "Garage" } };
+  await page.route("**/api/te/project", (route) => route.fulfill({ json: { revision: 1, project } }));
+  await page.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), { key: STORAGE_KEY, value: project });
+  for (const width of [1100, 1440, 1920]) {
+    await page.setViewportSize({ width, height: 1000 });
+    await page.goto("/te");
+    const boards = page.locator(".te-board-section");
+    await expect(boards).toHaveCount(2);
+    const dimensions = await boards.evaluateAll((elements) => elements.map((element) => {
+      const scroll = element.querySelector(".te-panel-scroll")!;
+      const enclosure = element.querySelector(".te-enclosure")!;
+      const slot = element.querySelector(".te-slot")!;
+      return { width: enclosure.getBoundingClientRect().width, slotWidth: slot.getBoundingClientRect().width, overflow: scroll.scrollWidth - scroll.clientWidth };
+    }));
+    expect(dimensions[0].width).toBeLessThan(dimensions[1].width);
+    expect(Math.abs(dimensions[0].slotWidth - dimensions[1].slotWidth)).toBeLessThan(0.1);
+    expect(dimensions.every((board) => board.overflow <= 0)).toBe(true);
+  }
+});
+
+test("breaker illustrations retain their proportions in details and drag previews", async ({ page }) => {
+  const project = emptyProject();
+  await page.route("**/api/te/project", (route) => route.fulfill({ json: { revision: 1, project } }));
+  await page.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), { key: STORAGE_KEY, value: project });
+  await page.goto("/te");
+  await page.getByRole("button", { name: "Disjoncteurs", exact: true }).click();
+  for (const [name, width] of [["Disjoncteur 16 A · XE", 31], ["Disjoncteur 40 A · Acti9", 56]] as const) {
+    await page.getByRole("button", { name: `Ajouter ${name}`, exact: true }).click();
+    const face = page.locator(".te-inspector-preview .te-breaker-front");
+    await expect(face).toBeVisible();
+    expect(await face.boundingBox()).toMatchObject({ width, height: 112 });
+    const handle = page.getByRole("button", { name: `Glisser ${name}`, exact: true });
+    await handle.focus();
+    await page.keyboard.press("Space");
+    const preview = page.locator(".te-drag-ghost .te-breaker-front");
+    await expect(preview).toBeVisible();
+    expect(await preview.boundingBox()).toMatchObject({ width, height: 112 });
+    await page.keyboard.press("Escape");
+  }
+});
+
+test("Shelly Pro Dimmer 2PM appears green and occupies one slot", async ({ page }) => {
+  const project = emptyProject();
+  await page.route("**/api/te/project", (route) => route.fulfill({ json: { revision: 1, project } }));
+  await page.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), { key: STORAGE_KEY, value: project });
+  await page.goto("/te");
+  await page.getByRole("button", { name: "Domotique", exact: true }).click();
+  const card = page.locator(".te-catalog-card").filter({ has: page.getByRole("heading", { name: "Shelly Pro Dimmer 2PM", exact: true }) });
+  await expect(card).toContainText("94 × 19 × 69 mm");
+  await expect(card).toContainText("1 module");
+  await expect(card.locator(".te-shelly-front svg > rect").first()).toHaveAttribute("fill", "#a6c928");
+  await card.getByRole("button", { name: "Ajouter Shelly Pro Dimmer 2PM" }).click();
+  const device = page.locator(".te-device");
+  await expect(device).toHaveCSS("grid-column-end", "span 1");
+  await expect(device.locator(".te-shelly-front svg > rect").first()).toHaveAttribute("fill", "#a6c928");
+  await expect(page.locator(".te-inspector-preview .te-shelly-front svg > rect").first()).toHaveAttribute("fill", "#a6c928");
+});
+
+test("Shelly Dual Cover shows its screen and occupies three slots", async ({ page }) => {
+  const project = emptyProject();
+  await page.route("**/api/te/project", (route) => route.fulfill({ json: { revision: 1, project } }));
+  await page.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), { key: STORAGE_KEY, value: project });
+  await page.goto("/te");
+  await page.getByRole("button", { name: "Domotique", exact: true }).click();
+  const card = page.locator(".te-catalog-card").filter({ has: page.getByRole("heading", { name: "Shelly Pro Dual Cover/Shutter PM", exact: true }) });
+  await expect(card).toContainText("96 × 53 × 59 mm");
+  await expect(card).toContainText("3 modules");
+  await expect(card.locator("svg text").filter({ hasText: "COVER 1" })).toHaveCount(1);
+  await card.getByRole("button", { name: "Ajouter Shelly Pro Dual Cover/Shutter PM" }).click();
+  await expect(page.locator(".te-device")).toHaveCSS("grid-column-end", "span 3");
+  await expect(page.locator(".te-inspector-preview svg text").filter({ hasText: "COVER 2" })).toHaveCount(1);
+});
+
 test("edit two visible panels independently, restore, export, import and undo removal", async ({ page }) => {
   await openEditor(page);
   await page.getByRole("button", { name: "Ajouter Disjoncteur 16 A · XE", exact: true }).click();

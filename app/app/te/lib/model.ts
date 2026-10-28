@@ -106,7 +106,8 @@ function unique(items: { id: string }[]) {
 export function validateProject(value: unknown, allowSecondPanel = true, commonCircuits?: Circuit[]): Project {
   const input = record(value);
   if (input.secondPanel !== undefined && !allowSecondPanel) throw new Error("Deux tableaux maximum par projet.");
-  if (![1, 2].includes(input.schemaVersion as number) || input.catalogVersion !== CATALOG_VERSION) throw new Error("Version de projet ou de catalogue non prise en charge.");
+  const legacyCatalog = input.catalogVersion === "resi9-xe-2026-10-24-v1";
+  if (![1, 2].includes(input.schemaVersion as number) || (!legacyCatalog && input.catalogVersion !== CATALOG_VERSION)) throw new Error("Version de projet ou de catalogue non prise en charge.");
   const capacity = integer(input.capacity, 13, 18);
   if (![13, 18].includes(capacity)) throw new Error("Largeur du coffret invalide.");
   const rows = list(input.rows, 6, (r): Row => ({ id: string(r.id, 80, true), name: string(r.name), distributor: string(r.distributor, 40), ...(r.distributions !== undefined ? { distributions: list(r.distributions, 3, d => ({ id: string(d.id, 80, true), reference: string(d.reference, 40, true), slot: integer(d.slot, 0, capacity - 1) })) } : {}) }));
@@ -117,6 +118,36 @@ export function validateProject(value: unknown, allowSecondPanel = true, commonC
   [rows, circuits, devices, accessories].forEach(unique);
   if (devices.some((d) => !PRODUCT_BY_REF[d.reference])) throw new Error("Référence d’appareil inconnue dans le catalogue.");
   const project: Project = { schemaVersion: 2, catalogVersion: CATALOG_VERSION, name: string(input.name, 120), capacity, rows, circuits, devices, accessories };
+  if (legacyCatalog && devices.some(device => device.reference === "SHELLY-PRO-DUAL-COVER-SHUTTER-PM")) {
+    const oldWidth = (device: Device) => device.reference === "SHELLY-PRO-DUAL-COVER-SHUTTER-PM" ? 2 : PRODUCT_BY_REF[device.reference].modules;
+    for (const device of devices) {
+      if (!rows.some(row => row.id === device.rowId) || device.slot + oldWidth(device) > capacity || devices.some(other => other.id !== device.id && other.rowId === device.rowId && device.slot < other.slot + oldWidth(other) && device.slot + oldWidth(device) > other.slot)) throw new Error("Position d’appareil invalide dans le projet enregistré.");
+    }
+    const covers = devices.filter(device => device.reference === "SHELLY-PRO-DUAL-COVER-SHUTTER-PM");
+    const placed = devices.filter(device => device.reference !== "SHELLY-PRO-DUAL-COVER-SHUTTER-PM");
+    for (const cover of covers) {
+      const occupied = { ...project, devices: placed };
+      let rowId = cover.rowId;
+      let slot: number | null = cover.slot;
+      if (placementError(occupied, cover.reference, rowId, slot)) {
+        slot = null;
+        for (const row of rows) {
+          const free = firstFreeSlot(occupied, cover.reference, row.id);
+          if (free !== null) { rowId = row.id; slot = free; break; }
+        }
+        if (slot === null && rows.length < 6) {
+          let id = "row-cover-migration";
+          while (rows.some(row => row.id === id)) id += "-1";
+          rows.push({ id, name: `Rangée ${rows.length + 1}`, distributor: "" });
+          rowId = id; slot = 0;
+        }
+        if (slot === null) throw new Error("Le Shelly Pro Dual Cover nécessite trois modules et aucune place suffisante n’est disponible.");
+      }
+      cover.rowId = rowId;
+      cover.slot = slot;
+      placed.push(cover);
+    }
+  }
   if (input.sharedCircuits !== undefined) {
     if (input.sharedCircuits !== true || !allowSecondPanel) throw new Error("Inventaire commun des circuits invalide.");
     project.sharedCircuits = true;
@@ -225,6 +256,7 @@ export function projectChecks(project: Project): string[] {
   for (const device of project.devices) {
     if (PRODUCT_BY_REF[device.reference].kind === "impulse") messages.push(`${device.label || PRODUCT_BY_REF[device.reference].name} : circuit commandé, boutons-poussoirs et protection à préciser selon la notice constructeur.`);
     if (PRODUCT_BY_REF[device.reference].kind === "spd") messages.push(`${device.label || PRODUCT_BY_REF[device.reference].name} : raccordement et liaison à la terre à vérifier selon la notice constructeur.`);
+    if (PRODUCT_BY_REF[device.reference].kind === "domotics") messages.push(`${device.label || PRODUCT_BY_REF[device.reference].name} : alimentation, protection, câblage et compatibilité avec la distribution à confirmer selon la notice Shelly.`);
     if (PRODUCT_BY_REF[device.reference].kind !== "breaker") continue;
     const label = device.label || PRODUCT_BY_REF[device.reference].name;
     if (!deviceCircuitIds(device).length) messages.push(`${label} : circuit non affecté.`);

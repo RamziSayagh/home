@@ -5,6 +5,39 @@ function device(patch: Partial<Device> = {}): Device {
   return { id: "d1", reference: "R9EFC616", rowId: "row-1", slot: 0, label: "", circuitId: "", upstreamId: "", ...patch };
 }
 
+test("single-slot Shelly devices retain their positions in saved projects", () => {
+  for (const reference of ["SHELLY-PRO-2", "SHELLY-PRO-2PM", "SHELLY-PRO-DIMMER-2PM", "SHELLY-PRO-RGBWW-PM"]) {
+    const project = emptyProject();
+    project.devices = [device({ reference, slot: 3 })];
+    const saved = parseProject(JSON.stringify(project));
+    expect(saved.devices[0].slot).toBe(3);
+    expect(placementError(saved, "R9EFC616", "row-1", 3)).toContain("occupé");
+    expect(placementError(saved, "R9EFC616", "row-1", 4)).toBeNull();
+    expect(placementError(saved, reference, "row-1", 12)).toBeNull();
+  }
+});
+
+test("legacy dual-cover placements migrate safely to three slots", () => {
+  const cover = device({ id: "cover", reference: "SHELLY-PRO-DUAL-COVER-SHUTTER-PM", slot: 3 });
+  const legacy = { ...emptyProject(), catalogVersion: "resi9-xe-2026-10-24-v1", devices: [cover, device({ id: "breaker", slot: 5 })] };
+  const migrated = parseProject(JSON.stringify(legacy));
+  expect(migrated.devices.find(d => d.id === "breaker")?.slot).toBe(5);
+  expect(migrated.devices.find(d => d.id === "cover")?.slot).toBe(0);
+  expect(placementError(migrated, "R9EFC616", "row-1", 2)).toContain("occupé");
+  expect(parseProject(JSON.stringify(migrated))).toEqual(migrated);
+  const clear = parseProject(JSON.stringify({ ...legacy, devices: [cover] }));
+  expect(clear.devices[0].slot).toBe(3);
+  expect(placementError(clear, cover.reference, "row-1", 11)).toContain("dépasse");
+  const corrupt = { ...legacy, devices: [cover, device({ id: "breaker", slot: 4 })] };
+  expect(() => parseProject(JSON.stringify(corrupt))).toThrow("Position d’appareil invalide");
+  const fullRow = { ...legacy, rows: legacy.rows.slice(0, 1), devices: [cover, ...Array.from({ length: 11 }, (_, slot) => device({ id: `breaker-${slot}`, slot: slot < 3 ? slot : slot + 2 }))] };
+  const expanded = parseProject(JSON.stringify(fullRow));
+  expect(expanded.rows).toHaveLength(2);
+  expect(expanded.devices.find(d => d.id === "cover")?.rowId).toBe(expanded.rows[1].id);
+  const fullPanel = { ...fullRow, rows: Array.from({ length: 6 }, (_, i) => ({ id: `row-${i + 1}`, name: `Rangée ${i + 1}`, distributor: "" })), devices: [...fullRow.devices, ...Array.from({ length: 65 }, (_, i) => device({ id: `extra-${i}`, rowId: `row-${2 + Math.floor(i / 13)}`, slot: i % 13 }))] };
+  expect(() => parseProject(JSON.stringify(fullPanel))).toThrow("aucune place suffisante");
+});
+
 test("GTL round-trips as shared equipment, validates imports and contributes kit quantities", () => {
   const project = { ...emptyProject(), gtl: { units: [{ id: "gtl", reference: "R9HKT18" as const, quantity: 2, accessories: [] }], placements: { primary: "gtl", secondary: "", communication: "" } }, secondPanel: emptyProject() };
   expect(parseProject(JSON.stringify(project))).toEqual({ ...project, sharedCircuits: true });
