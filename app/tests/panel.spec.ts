@@ -20,6 +20,80 @@ async function drag(page: Page, source: Locator, destination: Locator) {
   await page.mouse.up();
 }
 
+test("offer the 3EM v2 while retaining saved EM-50 devices", async ({ page }) => {
+  const project = emptyProject();
+  project.devices = [{ id: "old-meter", reference: "SHELLY-PRO-EM-50", rowId: project.rows[0].id, slot: 0, label: "Ancien compteur", circuitId: "", upstreamId: "" }];
+  await page.route("**/api/te/project", route => route.fulfill({ json: { revision: 1, project } }));
+  await page.addInitScript(({ key, value }) => { if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(value)); }, { key: STORAGE_KEY, value: project });
+  await page.goto("/te");
+  await page.getByRole("button", { name: "Domotique", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Ajouter Shelly Pro EM-50" })).toHaveCount(0);
+  await expect(page.locator('[data-device-id="old-meter"]')).toBeVisible();
+  await page.getByRole("button", { name: "Ajouter Shelly PRO 3EM 120A v2" }).click();
+  await expect(page.locator(".te-device").filter({ hasText: "Shelly PRO 3EM 120A v2" })).toBeVisible();
+  await expect.poll(async () => page.evaluate(key => JSON.parse(localStorage.getItem(key)!), STORAGE_KEY)).toMatchObject({ devices: [{ reference: "SHELLY-PRO-EM-50" }, { reference: "SHELLY-PRO-3EM-120A-V2", slot: 1 }] });
+  await page.reload();
+  await expect(page.locator(".te-device").filter({ hasText: "Shelly PRO 3EM 120A v2" })).toBeVisible();
+});
+
+test("move a Shelly between boards while preserving its details and clearing its old breaker", async ({ page }) => {
+  await page.setViewportSize({ width: 2400, height: 1200 });
+  const first = emptyProject();
+  first.circuits = [{ id: "light", name: "Salon", room: "Salon", floor: "", usage: "Éclairage", load: "", cable: "" }];
+  first.devices = [
+    { id: "breaker", reference: "R9EFC616", rowId: first.rows[0].id, slot: 0, label: "", circuitId: "", upstreamId: "" },
+    { id: "shelly", reference: "SHELLY-PRO-2PM", rowId: first.rows[0].id, slot: 2, label: "Mon Shelly", circuitId: "", upstreamId: "", shellyLinks: [{ id: "link", channel: "1", breakerId: "breaker", circuitId: "light", light: "Plafonnier", switchName: "Entrée", cable: "L1" }] },
+  ];
+  const project = { ...first, secondPanel: emptyProject() };
+  await page.route("**/api/te/project", route => route.fulfill({ json: { revision: 1, project } }));
+  await page.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), { key: STORAGE_KEY, value: project });
+  await page.goto("/te");
+  const boards = page.locator(".te-board-section");
+  await expect(boards).toHaveCount(2);
+  await drag(page, boards.nth(0).locator('[data-device-id="shelly"]'), boards.nth(1).locator(".te-slot").nth(3));
+  await expect(boards.nth(1).locator('[data-device-id="shelly"]')).toBeVisible();
+  await expect(page.getByText(/liens vers les disjoncteurs de l’ancien tableau ont été effacés/)).toBeVisible();
+  await expect.poll(async () => page.evaluate(key => JSON.parse(localStorage.getItem(key)!), STORAGE_KEY)).toMatchObject({ secondPanel: { devices: [{ id: "shelly", label: "Mon Shelly", shellyLinks: [{ breakerId: "", circuitId: "light", light: "Plafonnier", switchName: "Entrée", cable: "L1" }] }] } });
+  await drag(page, boards.nth(1).locator('[data-device-id="shelly"]'), boards.nth(0).locator(".te-slot").nth(4));
+  await expect(boards.nth(0).locator('[data-device-id="shelly"]')).toBeVisible();
+  await page.getByRole("button", { name: "Annuler la dernière modification" }).click();
+  await expect(boards.nth(1).locator('[data-device-id="shelly"]')).toBeVisible();
+});
+
+test("move breakers, differentials and distributors between boards with relationship cleanup", async ({ page }) => {
+  await page.setViewportSize({ width: 2400, height: 1200 });
+  const first = emptyProject();
+  first.circuits = [{ id: "circuit", name: "Salon", room: "", floor: "", usage: "", load: "", cable: "" }];
+  first.rows[0].distributions = [{ id: "segment", reference: "R9EXHS05", slot: 0 }];
+  first.devices = [
+    { id: "rcd", reference: "R9ERA263", rowId: "row-1", slot: 0, label: "", circuitId: "", upstreamId: "" },
+    { id: "breaker", reference: "R9EFC616", rowId: "row-1", slot: 2, label: "", circuitId: "circuit", upstreamId: "rcd" },
+    { id: "shelly", reference: "SHELLY-PRO-2PM", rowId: "row-1", slot: 4, label: "", circuitId: "", upstreamId: "", shellyLinks: [{ id: "link", channel: "1", breakerId: "breaker", circuitId: "circuit", light: "Salon", switchName: "", cable: "" }] },
+  ];
+  const project = { ...first, secondPanel: emptyProject() };
+  await page.route("**/api/te/project", route => route.fulfill({ json: { revision: 1, project } }));
+  await page.addInitScript(({ key, value }) => { if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(value)); }, { key: STORAGE_KEY, value: project });
+  await page.goto("/te");
+  const boards = page.locator(".te-board-section");
+  await drag(page, boards.nth(0).locator('[data-device-id="breaker"]'), boards.nth(1).locator(".te-slot").nth(2));
+  await expect(boards.nth(1).locator('[data-device-id="breaker"]')).toBeVisible();
+  await expect.poll(async () => page.evaluate(key => JSON.parse(localStorage.getItem(key)!), STORAGE_KEY)).toMatchObject({ devices: [{ id: "rcd" }, { id: "shelly", shellyLinks: [{ breakerId: "", circuitId: "circuit" }] }], secondPanel: { devices: [{ id: "breaker", circuitId: "circuit", upstreamId: "" }] } });
+  await drag(page, boards.nth(0).locator('[data-device-id="rcd"]'), boards.nth(1).locator(".te-slot").nth(4));
+  await expect(boards.nth(1).locator('[data-device-id="rcd"]')).toBeVisible();
+  const segment = boards.nth(0).locator('[data-distribution-id="segment"] .te-distribution-handle');
+  const destination = boards.nth(1).locator('.te-distribution-slot[data-slot="4"]').first();
+  const from = await segment.boundingBox(); const to = await destination.boundingBox();
+  if (!from || !to) throw new Error("Missing distribution coordinates");
+  await page.mouse.move(from.x + 5, from.y + from.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(from.x + 15, from.y + from.height / 2, { steps: 3 });
+  await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 15 });
+  await page.mouse.up();
+  await expect(boards.nth(1).locator('[data-distribution-id="segment"]')).toHaveAttribute("data-slot", "4");
+  await page.getByRole("button", { name: "Annuler la dernière modification" }).click();
+  await expect(boards.nth(0).locator('[data-distribution-id="segment"]')).toBeVisible();
+});
+
 test("two 18-module boards scroll together between the catalogue and inspector", async ({ page }) => {
   const first = { ...emptyProject(), capacity: 18 };
   const project = { ...first, secondPanel: { ...emptyProject(), capacity: 18, name: "Garage" } };

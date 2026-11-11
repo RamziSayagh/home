@@ -37,6 +37,7 @@ export type Product = {
   detail: string;
   source: string;
   verifiedAt: string;
+  legacy?: boolean;
 };
 
 // Widths use 18 mm modules. Sources and verification notes are in README.md.
@@ -69,7 +70,8 @@ export const PRODUCTS: Product[] = [
   { reference: "SHELLY-PRO-DIMMER-0-1-10V-PM", name: "Shelly Pro Dimmer 0/1-10V PM", short: "0/1–10", kind: "domotics", range: "Shelly Pro", modules: 1, dimensions: "94 × 19 × 69 mm", rating: "Variateur · 0/1–10 V", detail: "Contrôle de ballasts ou pilotes de luminaires professionnels.", source: "https://www.shelly.com/fr/products/shelly-pro-dimmer-0-1-10v-pm", verifiedAt: "2026-10-27" },
   { reference: "SHELLY-PRO-RGBWW-PM", name: "Shelly Pro RGBWW PM", short: "RGBWW", kind: "domotics", range: "Shelly Pro", modules: 1, dimensions: "94 × 19 × 69 mm", rating: "LED · 5 canaux", detail: "Gestion avancée des bandeaux LED couleur et blanc.", source: "https://www.shelly.com/products/shelly-pro-rgbww-pm", verifiedAt: "2026-10-27" },
   { reference: "SHELLY-PRO-DUAL-COVER-SHUTTER-PM", name: "Shelly Pro Dual Cover/Shutter PM", short: "Cover", kind: "domotics", range: "Shelly Pro", modules: 3, dimensions: "96 × 53 × 59 mm", rating: "Volets/stores · 2 moteurs", detail: "Contrôle bidirectionnel avec mesure de puissance.", source: "https://www.shelly.com/fr/products/shelly-pro-dual-cover-shutter-pm", verifiedAt: "2026-10-27" },
-  { reference: "SHELLY-PRO-EM-50", name: "Shelly Pro EM-50", short: "EM-50", kind: "domotics", range: "Shelly Pro", modules: 1, dimensions: "94 × 19 × 69 mm", rating: "Énergie · 2 canaux", detail: "Compteur monophasé livré avec deux pinces de 50 A.", source: "https://www.shelly.com/collections/professional-devices", verifiedAt: "2026-10-26" },
+  { reference: "SHELLY-PRO-3EM-120A-V2", name: "Shelly PRO 3EM 120A v2", short: "3EM v2", kind: "domotics", range: "Shelly Pro", modules: 1, dimensions: "94 × 19 × 69 mm", rating: "Énergie · 3 × 120 A", detail: "Compteur monophasé ou triphasé, livré avec trois transformateurs de courant 120 A.", source: "https://www.shelly.com/products/shelly-pro-3em-v2?variant=63723457872221", verifiedAt: "2026-11-10" },
+  { reference: "SHELLY-PRO-EM-50", name: "Shelly Pro EM-50", short: "EM-50", kind: "domotics", range: "Shelly Pro", modules: 1, dimensions: "94 × 19 × 69 mm", rating: "Énergie · 2 canaux", detail: "Compteur monophasé livré avec deux pinces de 50 A.", source: "https://www.shelly.com/collections/professional-devices", verifiedAt: "2026-10-26", legacy: true },
   { reference: "SHELLY-LAN-SWITCH", name: "Shelly LAN Switch", short: "LAN", kind: "domotics", range: "Shelly", modules: 3, dimensions: "96 × 53 × 59 mm", rating: "Réseau · 5 ports RJ45", detail: "Commutateur réseau alimenté en 230 V pour distribuer Internet dans le tableau.", source: "https://kb.shelly.cloud/knowledge-base/shelly-lan-switch", verifiedAt: "2026-10-26" },
 ];
 

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 const STORAGE = "maison1973.purchases.v1";
@@ -156,7 +155,6 @@ export default function Purchases() {
   const received = items.filter(i => i.status === "Reçu").length;
 
   return <div className="purchases">
-    <nav className="purchase-nav" aria-label="Navigation principale"><Link href="/" className="brand">MAISON 1973</Link><div><Link href="/">La maison</Link><Link href="/te">TE</Link><Link href="/achats" aria-current="page">Achats</Link></div></nav>
     <main className="purchase-main">
       <header className="purchase-header"><div><p className="kicker">Le carnet des travaux</p><h1>Les achats.</h1><p>Matériaux, articles et équipement : tout pour préparer le chantier.</p></div><button onClick={exportCsv} disabled={!items.length}>Exporter en CSV ↗</button></header>
       <div className="purchase-stats" aria-label="Bilan des achats"><div><span>Total prévu TTC</span><strong>{currency.format(total)}</strong></div><div><span>Reste à commander TTC</span><strong>{currency.format(remaining)}</strong></div><div><span>Articles reçus</span><strong>{received} <small>/ {items.length}</small></strong></div></div>

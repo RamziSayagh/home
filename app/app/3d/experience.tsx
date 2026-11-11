@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { SceneController } from "./world";
 
@@ -57,11 +56,6 @@ export default function Experience() {
 
   return (
     <main className="world-page">
-      <header className="world-nav">
-        <Link href="/" className="world-brand">MAISON <span>1973</span></Link>
-        <nav aria-label="Navigation principale"><Link href="/">Le projet</Link><span aria-current="page">3D <i /></span><Link href="/te">TE</Link></nav>
-        <Link href="/" className="world-back">← <span>Retour à la maison</span></Link>
-      </header>
 
       <section className={`world-stage phase-${phase}`} aria-labelledby="world-title" style={{ "--sky-top": skyColor(skies, light), "--sky-bottom": skyColor(horizons, light) } as CSSProperties}>
         <div className="world-sky" aria-hidden="true"><div className="world-sun" style={{ transform: `translateY(${light * 2}px)`, opacity: Math.max(0, 1 - Math.max(0, light - 60) / 25) }} /></div>

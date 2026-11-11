@@ -158,5 +158,25 @@
         "url": "https://cdn.ecomm.ui.com/products/01036d73-b03c-42d6-a03f-a1bfd3eb29d5/cfdd1c52-a08b-430f-96f6-745816c4412c.png"
       }
     ]
+  },
+  {
+    "reference": "USW-Aggregation",
+    "page": "https://eu.store.ui.com/eu/en/products/usw-aggregation?variant=usw-aggregation-eu",
+    "images": [
+      {
+        "file": "usw-aggregation-0.png",
+        "url": "https://cdn.ecomm.ui.com/products/1c748fb1-b4df-43ef-83e0-d5ed26f9db7c/0247dd12-2dba-44c7-a717-626992874181.png"
+      }
+    ]
+  },
+  {
+    "reference": "UACC-Rack-Panel-Brush-1U",
+    "page": "https://eu.store.ui.com/eu/en/category/accessories-rack-mount/products/uacc-rack-panel-ocd?variant=uacc-rack-panel-brush-1u",
+    "images": [
+      {
+        "file": "uacc-rack-panel-brush-1u-0.png",
+        "url": "https://cdn.ecomm.ui.com/products/24c35f46-e2bf-4085-8fa4-946f927ce372/0d8482e9-f5b6-4c40-a9f4-a69e592db500.png"
+      }
+    ]
   }
 ]

@@ -2,6 +2,8 @@
 
 ## Confirmed context
 
+- The shared header on all pages gives direct, clearly named links to the electrical panel, purchases, network rack and 3D view; a single "La maison" menu groups the home page sections. The links wrap on mobile, home section links work from other routes, and the section menu closes after selection. The shared root layout replaces the former page-specific navigation and hides navigation in print. Lint and production build passed (2026-10-29).
+
 - The repository contains a French house renovation site titled Maison 1973. The Next.js App Router application lives in `app/`; the legacy root HTML and duplicate assets have been removed after migration verification.
 - `app/package.json` declares Next.js 16.4.3, React 19.3.0, and TypeScript. Existing pages use global CSS and client components for photo gallery interactions.
 - Project documentation must be in English; the website interface is French.
@@ -10,6 +12,12 @@
 
 ## Network rack
 
+- Added USW-Pro-XG-10-PoE on 2026-10-30: 1 U, ten 10 GbE ports, two 10G SFP+ ports, PoE+++ and a EUR 629 EU store price. Its illustrative front and catalogue integrate with existing rack placement and pricing. The official reference image is linked remotely because the download was unavailable in the restricted environment.
+
+- Added UACC-Rack-Panel-Brush-1U on 2026-10-29 as a 1 U accessory at the verified EU store price of EUR 35. The brush front, official reference image, catalogue, rack, total and persistence are covered by the existing rack browser scenario; focused lint and production build passed.
+
+- Added USW-Aggregation on 2026-10-29: 1 U, eight 1/10 Gbps SFP+ ports and a EUR 240 EU store price; the manufacturer image and a dedicated front illustration are included. Catalogue placement, total and reload passed the existing browser scenario, and lint/build passed. Four of five rack tests passed; the separate drag placement test failed to move an existing NAS.
+
 - Rebuilt the rack presentation as a cabinet with rails, numbered U positions, mounting holes, feet and flush equipment fronts (2026-10-27). `rack-cabinet.tsx` supports desktop drag/drop and keyboard/mobile position selection, leaving explicit gaps between devices. `rack-model.ts` validates bounds and collisions, finds contiguous free space and migrates legacy packed lists without changing their order. The same storage key now holds version 2 with top-relative `slot` positions; resizing preserves those slots and disallows clipping placed equipment. The catalogue has 16 products and a bounded scroll area; the cabinet is displayed first on mobile. Lint/build and five Playwright checks passed, including migration, fragmented capacity, 1U/3U geometry, dragging and persistence. Desktop/mobile screenshots were visually inspected.
 - Added four rack-mount storage products on 2026-10-27: UNAS Pro 4 (1 U), UNAS Pro (2 U), UNAS Pro 8 (2 U) and Enterprise NAS (3 U). They have manufacturer-based SVG fronts, official reference images and EU store prices. Ubiquiti lists the Pro 8 as 10 Gbps; the Enterprise has 25 Gbps and redundant power. All are placed and priced using the existing rack model. Focused ESLint, build and three rack browser tests passed.
 - On 2026-10-27, added prices for all twelve products as observed on the official European Ubiquiti store, plus product links and a rack total. Prices are dated static estimates; unmatched custom equipment is explicitly excluded from the total. The store redirected tested `/eu/fr/` product URLs to `/eu/en/`, so links use the functioning European English pages. Prices are looked up by reference without changing saved project data. Focused lint, production build and rack Playwright tests passed.
@@ -17,6 +25,22 @@
 - Replaced the generic rack device drawings with SVG front elevations based on twelve downloaded official Ubiquiti reference images (2026-10-27). `app/baie/ubiquiti-front.tsx` reproduces the recognizable device layouts (drive bays, port rows, legacy indicator and accessories); finishes and fine details remain illustrative. The catalogue and rack share this component and expose the original reference images. Sources and downloader are retained under `public/assets/ubiquiti/` and `scripts/download-ubiquiti-images.mjs`. Existing saved data is unchanged. Focused ESLint, production build and two Playwright scenarios passed, covering all image URLs, adding/restoring all twelve devices, and mobile overflow. Desktop/mobile screenshots were visually inspected.
 
 ## Electrical panel editor
+
+- On 2026-11-10, replaced the Shelly Pro EM-50 catalogue entry with Shelly PRO 3EM 120A v2: one DIN module, 94 × 19 × 69 mm, single- or three-phase measurement and three included 120 A current transformers, per Shelly's product page. Existing EM-50 devices remain valid and retain their original identity but are hidden from the catalogue; no saved devices are silently converted. Focused lint, production build and a browser persistence/legacy test passed.
+
+- All devices and distribution segments can be dragged between the two electrical panels (2026-11-10). The move preserves labels and shared circuit assignments; links to breakers or differentials left in the original panel are cleared with a notice. Destination capacity and collisions are checked; the move supports undo and persistence. Production build, focused lint and browser tests covered Shelly moves in both directions, breaker and differential moves, distribution moves, relationship cleanup and undo.
+
+- The Shelly conceptual lighting view distinguishes the blue neutral and the user's violet lamp return; neutral origin and actual terminals remain unspecified (2026-11-03).
+- The user describes the blue neutral as linking the breaker, Shelly N terminal and light; the conceptual view reflects that connection (2026-11-03).
+- For Shelly Pro 2PM, the diagram labels O1/O2 and SW1/SW2 and explains the matching output and switch input for each channel (2026-11-03).
+- The Pro 4PM diagram labels button inputs S1–S4 and load outputs O1–O4; Shelly documents four L inputs on V1 and one L input on V2, so the view calls for version-specific verification (2026-11-03).
+- The Pro Dual Cover/Shutter PM has a dedicated shutter view with two direction lines, motor and shutter labels, and S1/S2 with O1 and S3/S4 with O2, per Shelly documentation. Conductor colors are illustrative and motor earth is not drawn; stored link fields remain compatible (2026-11-03).
+- The same conceptual view shows the user's red push-button phase and orange return, with their origins and actual terminals unspecified (2026-11-03).
+- In the Shelly lighting concept, the red phase branches from the breaker connection toward the Shelly's L marking and the push button, as described by the user; the remaining terminals still require model-specific confirmation (2026-11-03).
+
+- The Shelly diagram's breaker picker groups devices by panel row and orders them by slot (2026-11-03).
+
+- Shelly devices can store up to 20 user-described links associating a breaker in the same panel, a shared circuit, a channel, light and switch. A large interactive diagram opens from the inspector; clicking connected equipment edits that element, with tabs for multiple links. Previously entered cable labels remain in stored data but are no longer shown or edited. The conceptual view does not identify terminals or validate wiring. Links round-trip through project validation and storage, and deleting a referenced breaker or circuit clears its reference. Production build, focused lint and a model persistence/deletion test passed (2026-11-03).
 
 - Disabled options and disabled select controls in the electrical editor use darker text on a light background to improve readability while retaining native disabled behavior (2026-10-27). Native menu rendering can vary by browser and OS. Production build passed.
 

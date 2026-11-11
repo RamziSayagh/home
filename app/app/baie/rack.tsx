@@ -1,5 +1,4 @@
 ﻿"use client";
-import Link from "next/link";
 import UbiquitiFront from "./ubiquiti-front";
 import RackCabinet from "./rack-cabinet";
 import { canPlace, firstFreeSlot, readRackConfig, type RackConfig as Config, type RackItem as Item } from "./rack-model";
@@ -30,6 +29,22 @@ const catalogue = [
     "detail": "Passerelle UniFi",
     "units": 1,
     "url": "https://eu.store.ui.com/eu/en/products/udm-pro-max"
+  },
+  {
+    "name": "Switch Pro XG 10 PoE",
+    "reference": "USW-Pro-XG-10-PoE",
+    "category": "Switches",
+    "detail": "10 ports 10 GbE · 2 ports SFP+ 10 Gbit/s · PoE+++",
+    "units": 1,
+    "url": "https://eu.store.ui.com/eu/en/category/switching-professional-max-xg/products/usw-pro-xg-10-poe"
+  },
+  {
+    "name": "Switch Aggregation",
+    "reference": "USW-Aggregation",
+    "category": "Switches",
+    "detail": "8 ports SFP+ 10 Gbit/s",
+    "units": 1,
+    "url": "https://eu.store.ui.com/eu/en/products/usw-aggregation?variant=usw-aggregation-eu"
   },
   {
     "name": "Standard 24",
@@ -96,6 +111,14 @@ const catalogue = [
     "url": "https://eu.store.ui.com/eu/en/products/uacc-rack-panel-patch-blank-24"
   },
   {
+    "name": "Panneau passe-câbles à brosse",
+    "reference": "UACC-Rack-Panel-Brush-1U",
+    "category": "Accessoires",
+    "detail": "Ouverture 400 × 24 mm",
+    "units": 1,
+    "url": "https://eu.store.ui.com/eu/en/category/accessories-rack-mount/products/uacc-rack-panel-ocd?variant=uacc-rack-panel-brush-1u"
+  },
+  {
     "name": "UNAS Pro 4",
     "reference": "UNAS-Pro-4",
     "category": "Stockage",
@@ -136,12 +159,13 @@ const catalogue = [
     "url": "https://eu.store.ui.com/eu/en/products/uacc-rack-shelf-clv"
   }
 ];
-// Prices observed on the official European store on 27 October 2026, in euros.
+// Prices observed on the official European store between 27 and 30 October 2026, in euros.
 const europeanPrices: Record<string, number> = {
   "udm-pro": 340, "udm-se": 449, "udm-pro-max": 539,
-  "usw-24": 200, "usw-24-poe": 340, "usw-pro-24": 359,
+  "usw-pro-xg-10-poe": 629,
+  "usw-aggregation": 240, "usw-24": 200, "usw-24-poe": 340, "usw-pro-24": 359,
   "usw-pro-24-poe": 629, "usw-pro-max-24": 405, "usw-pro-max-24-poe": 739,
-  "us-24-250w": 359, "uacc-rack-panel-patch-blank-24": 25, "uacc-rack-shelf-clv": 44,
+  "uacc-rack-panel-brush-1u": 35, "us-24-250w": 359, "uacc-rack-panel-patch-blank-24": 25, "uacc-rack-shelf-clv": 44,
   "unas-pro-4": 449, "unas-pro": 449, "unas-pro-8": 719, "enas": 3599,
 };
 const euro = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
@@ -181,12 +205,11 @@ export default function Rack() {
     });
   }
   return <div className="rack-page">
-    <nav className="rack-nav" aria-label="Navigation"><Link href="/">MAISON 1973</Link><div><Link href="/te">Tableau électrique</Link><Link href="/achats">Achats</Link></div></nav>
     <main className="rack-main"><header className="rack-header"><p className="kicker">MAISON 1973 / RÉSEAU</p><h1>Baie informatique</h1><p>Imaginez l’organisation de votre baie et préparez votre liste de matériel.</p></header>
       {error && <p className="rack-error" role="alert">{error}</p>}
       <div className="rack-size"><div><p className="kicker">DIMENSIONS DE LA BAIE</p><h2>Choisir la hauteur</h2><p>Baie 19 pouces · sélectionnez le nombre d’unités disponibles.</p></div><div className="rack-size-controls"><div className="rack-presets">{[6, 9, 12, 15, 18, 24, 42].map(n => <button key={n} type="button" aria-pressed={config.height === n} disabled={!ready || !!error || n < minimumHeight} onClick={() => setConfig(c => ({ ...c, height: n }))}>{n} U</button>)}</div><label>Autre hauteur <select aria-label="Hauteur de la baie" disabled={!ready || !!error} value={config.height} onChange={e => setConfig(c => ({ ...c, height: Number(e.target.value) }))}>{Array.from({ length: 48 }, (_, i) => i + 1).map(n => <option key={n} value={n} disabled={n < minimumHeight}>{n} U</option>)}</select></label></div></div><div className="rack-stats"><div><span>Hauteur choisie</span><strong>{config.height} <small>U</small></strong></div><div><span>Espaces occupés</span><strong>{used} <small>U</small></strong></div><div><span>Espaces disponibles</span><strong>{config.height - used} <small>U</small></strong></div></div>
       <p className="rack-note">Configuration enregistrée dans ce navigateur. Vérifiez la profondeur, la ventilation, l’alimentation et les accessoires avant achat.</p>
-      <div className="rack-layout"><section className="rack-library"><div className="rack-section-heading"><div><p className="kicker">01 / COMPOSER</p><h2>Matériel</h2></div></div><p>Ajoutez des équipements à votre baie.</p><div className="rack-filters" aria-label="Catégories de matériel">{["Tout", "Passerelles", "Switches", "Stockage", "Accessoires"].map(c => <button key={c} type="button" aria-pressed={category === c} onClick={() => setCategory(c)}>{c}</button>)}</div><p className="rack-note">Façades dessinées d’après les visuels officiels Ubiquiti. Prix relevés sur la boutique Europe le 27 octobre 2026, susceptibles de changer. Les fiches sont en anglais.</p><div className="rack-catalogue">{catalogue.filter(item => category === "Tout" || item.category === category).map(item => <article key={item.reference}><DeviceFace reference={item.reference} name={item.name} /><div className="catalogue-info"><div><span className="rack-tag">UBIQUITI · {item.category.toUpperCase()}</span><h3>{item.name}</h3><p>{item.reference} · {item.detail} · {item.units} U</p><p className="rack-price">{euro.format(europeanPrices[item.reference.toLowerCase()])}</p><p><a href={item.url} target="_blank" rel="noreferrer">Boutique Europe ↗</a> · <a href={`/assets/ubiquiti/${item.reference.toLowerCase()}-0.png`} target="_blank" rel="noreferrer">Visuel officiel ↗</a></p></div><button disabled={!ready || !!error || firstFreeSlot(config, item.units) < 0} onClick={() => add(item)}>Ajouter +</button></div></article>)}</div>
+      <div className="rack-layout"><section className="rack-library"><div className="rack-section-heading"><div><p className="kicker">01 / COMPOSER</p><h2>Matériel</h2></div></div><p>Ajoutez des équipements à votre baie.</p><div className="rack-filters" aria-label="Catégories de matériel">{["Tout", "Passerelles", "Switches", "Stockage", "Accessoires"].map(c => <button key={c} type="button" aria-pressed={category === c} onClick={() => setCategory(c)}>{c}</button>)}</div><p className="rack-note">Façades dessinées d’après les visuels officiels Ubiquiti. Prix relevés sur la boutique Europe entre le 27 et le 30 octobre 2026, susceptibles de changer. Les fiches sont en anglais.</p><div className="rack-catalogue">{catalogue.filter(item => category === "Tout" || item.category === category).map(item => <article key={item.reference}><DeviceFace reference={item.reference} name={item.name} /><div className="catalogue-info"><div><span className="rack-tag">UBIQUITI · {item.category.toUpperCase()}</span><h3>{item.name}</h3><p>{item.reference} · {item.detail} · {item.units} U</p><p className="rack-price">{euro.format(europeanPrices[item.reference.toLowerCase()])}</p><p><a href={item.url} target="_blank" rel="noreferrer">Boutique Europe ↗</a> · <a href={item.reference === "USW-Pro-XG-10-PoE" ? "https://cdn.ecomm.ui.com/products/2617380d-b3a8-47c3-802f-fcc22d24e931/44aa0584-649b-431f-ada8-dc31943d9229.png" : `/assets/ubiquiti/${item.reference.toLowerCase()}-0.png`} target="_blank" rel="noreferrer">Visuel officiel ↗</a></p></div><button disabled={!ready || !!error || firstFreeSlot(config, item.units) < 0} onClick={() => add(item)}>Ajouter +</button></div></article>)}</div>
       <form className="rack-custom" onSubmit={e => { e.preventDefault(); if (!name.trim()) return; add({ name: name.trim(), reference: reference.trim(), units }); setName(""); setReference(""); }}><h3>Ajouter un autre équipement</h3><p>Panneau de brassage, onduleur ou autre matériel.</p><label>Nom<input required maxLength={100} value={name} onChange={e => setName(e.target.value)} /></label><label>Référence <span>(facultatif)</span><input maxLength={100} value={reference} onChange={e => setReference(e.target.value)} /></label><label>Hauteur en U<input type="number" min="1" max="48" required value={units} onChange={e => setUnits(Number(e.target.value))} /></label><button disabled={!ready || !!error || !Number.isInteger(units) || units < 1 || firstFreeSlot(config, units) < 0}>Ajouter à la baie</button></form></section>
       <section className="rack-workspace"><div className="rack-section-heading"><div><p className="kicker">02 / ORGANISER</p><h2>Votre baie 19 pouces</h2></div><span>{config.items.length} équipement{config.items.length !== 1 ? "s" : ""}</span></div><p>Chaque emplacement correspond à une unité. Positionnez vos appareils et gardez de la place pour la suite.</p><div className="rack-budget"><div><span>Estimation du matériel</span><strong>{euro.format(total)}</strong></div><p>{unknownPrices > 0 ? `${unknownPrices} équipement${unknownPrices > 1 ? "s" : ""} sans prix exclu${unknownPrices > 1 ? "s" : ""} du total.` : "Hors baie, livraison et accessoires non ajoutés."}</p></div><RackCabinet config={config} disabled={!ready || !!error} renderFace={item => <DeviceFace reference={item.reference} name={item.name} />} onMove={move} onRemove={id => setConfig(c => ({ ...c, items: c.items.filter(item => item.id !== id) }))} /><p className="rack-note">Vue de face indicative. La profondeur et la compatibilité de montage restent à vérifier.</p></section></div>
     </main></div>;

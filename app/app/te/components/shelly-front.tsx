@@ -10,7 +10,7 @@ export default function ShellyFront({ product, compact }: { product: Product; co
   const cover = ref === "SHELLY-PRO-DUAL-COVER-SHUTTER-PM";
   const lime = ref === "SHELLY-PRO-DIMMER-1PM" || ref === "SHELLY-PRO-DIMMER-2PM";
   const yellow = !lime && (ref.includes("DIMMER") || ref.includes("RGBWW"));
-  const white = ref === "SHELLY-PRO-EM-50";
+  const white = ref === "SHELLY-PRO-EM-50" || ref === "SHELLY-PRO-3EM-120A-V2";
   const blue = ref === "SHELLY-PRO-DIMMER-0-1-10V-PM" || ref === "SHELLY-PRO-1";
   const color = blue ? "#087ebc" : lime ? "#a6c928" : yellow ? "#f3cd28" : ref === "SHELLY-PRO-1PM" ? "#bd3644" : white ? "#e4e6e1" : "#292c30";
   const ink = !blue && (lime || yellow || white) ? "#282c2b" : "#f1f4f5";

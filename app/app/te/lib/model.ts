@@ -4,7 +4,8 @@ import { shareCircuits } from "./shared-circuits";
 export type Distribution = { id: string; reference: string; slot: number };
 export type Row = { id: string; name: string; distributor: string; distributions?: Distribution[] };
 export type Circuit = { id: string; name: string; room: string; floor: string; usage: string; load: string; cable: string };
-export type Device = { id: string; reference: string; rowId: string; slot: number; label: string; circuitId: string; secondCircuitId?: string; upstreamId: string };
+export type ShellyLink = { id: string; channel: string; breakerId: string; circuitId: string; light: string; switchName: string; cable: string };
+export type Device = { id: string; reference: string; rowId: string; slot: number; label: string; circuitId: string; secondCircuitId?: string; upstreamId: string; shellyLinks?: ShellyLink[] };
 export type Accessory = { id: string; reference: string; name: string; quantity: number };
 export type GtlAccessory = { reference: GtlAccessoryReference; quantity: number };
 export type GtlUnit = { id: string; reference: GtlReference; quantity: number; accessories: GtlAccessory[] };
@@ -40,7 +41,7 @@ export function firstFreeDistributionSlot(row: Row, reference: string, capacity:
 }
 
 export function removeCircuit(project: Project, id: string): Project {
-  return { ...project, circuits: project.circuits.filter((c) => c.id !== id), devices: project.devices.map((d) => ({ ...d, circuitId: d.circuitId === id ? "" : d.circuitId, ...(d.secondCircuitId === id ? { secondCircuitId: "" } : {}) })), ...(project.secondPanel ? { secondPanel: removeCircuit(project.secondPanel, id) } : {}) };
+  return { ...project, circuits: project.circuits.filter((c) => c.id !== id), devices: project.devices.map((d) => ({ ...d, circuitId: d.circuitId === id ? "" : d.circuitId, ...(d.secondCircuitId === id ? { secondCircuitId: "" } : {}), ...(d.shellyLinks ? { shellyLinks: d.shellyLinks.map(link => link.circuitId === id ? { ...link, circuitId: "" } : link) } : {}) })), ...(project.secondPanel ? { secondPanel: removeCircuit(project.secondPanel, id) } : {}) };
 }
 
 export function emptyProject(): Project {
@@ -113,7 +114,7 @@ export function validateProject(value: unknown, allowSecondPanel = true, commonC
   const rows = list(input.rows, 6, (r): Row => ({ id: string(r.id, 80, true), name: string(r.name), distributor: string(r.distributor, 40), ...(r.distributions !== undefined ? { distributions: list(r.distributions, 3, d => ({ id: string(d.id, 80, true), reference: string(d.reference, 40, true), slot: integer(d.slot, 0, capacity - 1) })) } : {}) }));
   if (!rows.length) throw new Error("Le coffret doit comporter au moins une rangée.");
   const circuits = list(input.circuits, input.sharedCircuits === true ? 600 : 300, (c): Circuit => ({ id: string(c.id, 80, true), name: string(c.name), room: string(c.room), floor: string(c.floor), usage: string(c.usage), load: string(c.load), cable: string(c.cable) }));
-  const devices = list(input.devices, 108, (d): Device => ({ id: string(d.id, 80, true), reference: string(d.reference, 40, true), rowId: string(d.rowId, 80, true), slot: integer(d.slot, 0, capacity - 1), label: string(d.label), circuitId: string(d.circuitId, 80), ...(d.secondCircuitId !== undefined ? { secondCircuitId: string(d.secondCircuitId, 80) } : {}), upstreamId: string(d.upstreamId, 80) }));
+  const devices = list(input.devices, 108, (d): Device => ({ id: string(d.id, 80, true), reference: string(d.reference, 40, true), rowId: string(d.rowId, 80, true), slot: integer(d.slot, 0, capacity - 1), label: string(d.label), circuitId: string(d.circuitId, 80), ...(d.secondCircuitId !== undefined ? { secondCircuitId: string(d.secondCircuitId, 80) } : {}), upstreamId: string(d.upstreamId, 80), ...(d.shellyLinks !== undefined ? { shellyLinks: list(d.shellyLinks, 20, link => ({ id: string(link.id, 80, true), channel: string(link.channel, 80), breakerId: string(link.breakerId, 80), circuitId: string(link.circuitId, 80), light: string(link.light), switchName: string(link.switchName), cable: string(link.cable) })) } : {}) }));
   const accessories = list(input.accessories, 200, (a): Accessory => ({ id: string(a.id, 80, true), reference: string(a.reference, 80), name: string(a.name), quantity: integer(a.quantity, 1, 999) }));
   [rows, circuits, devices, accessories].forEach(unique);
   if (devices.some((d) => !PRODUCT_BY_REF[d.reference])) throw new Error("Référence d’appareil inconnue dans le catalogue.");
@@ -212,6 +213,10 @@ export function validateProject(value: unknown, allowSecondPanel = true, commonC
     const product = PRODUCT_BY_REF[device.reference];
     if (deviceCircuitIds(device).some((id) => !(commonCircuits ?? circuits).some((c) => c.id === id) || product.kind !== "breaker")) throw new Error("Affectation de circuit invalide.");
     if (device.secondCircuitId && !supportsTwoDepartures(device.reference)) throw new Error("Retirez le second départ : deux départs directs ne sont pas documentés pour cet appareil.");
+    if (device.shellyLinks) {
+      unique(device.shellyLinks);
+      if (product.kind !== "domotics" || device.shellyLinks.some(link => (link.breakerId && !devices.some(d => d.id === link.breakerId && PRODUCT_BY_REF[d.reference]?.kind === "breaker")) || (link.circuitId && !(commonCircuits ?? circuits).some(c => c.id === link.circuitId)))) throw new Error("Liaison Shelly invalide.");
+    }
     if (device.upstreamId && (product.kind !== "breaker" || !devices.some((d) => d.id === device.upstreamId && PRODUCT_BY_REF[d.reference]?.kind === "rcd"))) throw new Error("Protection amont invalide.");
   }
   const assigned = devices.flatMap(deviceCircuitIds);
@@ -228,7 +233,7 @@ export function parseProject(text: string): Project {
 }
 
 export function removeDevice(project: Project, id: string): Project {
-  return { ...project, devices: project.devices.filter((d) => d.id !== id).map((d) => d.upstreamId === id ? { ...d, upstreamId: "" } : d) };
+  return { ...project, devices: project.devices.filter((d) => d.id !== id).map((d) => ({ ...d, ...(d.upstreamId === id ? { upstreamId: "" } : {}), ...(d.shellyLinks ? { shellyLinks: d.shellyLinks.map(link => link.breakerId === id ? { ...link, breakerId: "" } : link) } : {}) })) };
 }
 
 export function projectChecks(project: Project): string[] {

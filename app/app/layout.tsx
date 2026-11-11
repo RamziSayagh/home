@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
+import SiteNavigation from "./site-navigation";
 
 export const metadata: Metadata = {
   title: "Maison 1973",
@@ -12,6 +13,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="fr">
       <body>
+        <SiteNavigation />
         {children}
         <Analytics />
         <SpeedInsights />

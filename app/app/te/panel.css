@@ -122,3 +122,62 @@
 .te-circuit summary>.te-circuit-actions{display:flex!important;align-items:center;gap:5px;flex-shrink:0}.te-circuit-actions button{font-size:11px;padding:5px 8px}.te-circuit-actions button:focus-visible{outline-offset:1px}@media(max-width:480px){.te-circuit summary>.te-circuit-actions{width:100%;justify-content:flex-end}}@media print{.te-circuit summary>.te-circuit-actions{display:none!important}}
 .te-circuit-filters{display:grid;grid-template-columns:minmax(180px,1.4fr) repeat(3,minmax(130px,1fr)) auto auto;align-items:end;gap:10px 12px;margin:22px 0 8px;padding:14px;background:#f3f6ee;border:1px solid var(--te-line);border-radius:6px}.te-circuit-assignment{display:flex;align-items:center;gap:3px;flex-wrap:wrap}.te-circuit-assignment>span{display:block;flex-basis:100%;font-size:10px;color:var(--te-soft);margin-bottom:2px}.te-circuit-assignment button,.te-circuit-filter-reset{font-size:10px;padding:6px 8px}.te-circuit-assignment button[aria-pressed=true]{background:var(--te-green-light);border-color:var(--te-green);color:var(--te-green)}.te-circuit-filter-reset{align-self:end}.te-circuit-filter-count{margin:0 0 12px;font-size:11px;color:var(--te-soft)}@media(max-width:800px){.te-circuit-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.te-circuit-assignment{grid-column:1/-1}.te-circuit-filter-reset{justify-self:start}}@media(max-width:480px){.te-circuit-filters{grid-template-columns:1fr}}@media print{.te-circuit-filters,.te-circuit-filter-count{display:none!important}}
 .te-gtl-palette-card{grid-template-columns:100px minmax(0,1fr);gap:4px 8px;min-height:85px}.te-gtl-palette-card>.te-gtl-icon{grid-row:span 2;width:100px;height:auto;fill:none;stroke:none}.te-gtl-palette-card small{overflow-wrap:anywhere}.te-gtl-mounted-card{flex-direction:column;align-items:center;padding:12px}.te-gtl-mounted-card>.te-gtl-icon{width:100%;max-width:230px;height:auto;fill:none;stroke:none}.te-gtl-mounted-card.accessory{flex-direction:row}.te-gtl-mounted-card.accessory>.te-gtl-icon{width:65px;flex-shrink:0}.te-gtl-mounted-card.accessory>span{flex:1}.te-gtl-drag-ghost>.te-gtl-icon{width:110px;height:auto;fill:none;stroke:none}.te-gtl-drop.empty>.te-gtl-icon{width:95px;height:auto;fill:none;stroke:none}
+.te-shelly-links fieldset {
+  border: 1px solid #d8dfdd;
+  border-radius: 10px;
+  margin: 1rem 0;
+  padding: 0.8rem;
+  min-width: 0;
+}
+.te-shelly-links legend { font-weight: 700; padding: 0 0.25rem; }
+.te-shelly-map {
+  background: #edf5f1;
+  border-left: 3px solid #398367;
+  border-radius: 4px;
+  line-height: 1.6;
+  margin: 0.8rem 0;
+  overflow-wrap: anywhere;
+  padding: 0.7rem;
+}
+.te-shelly-map small { display: block; }
+.te-wire-open { width: 100%; text-align: left; margin: .5rem 0 1rem; }
+.te-wire-open span { float: right; }
+.te-wire-overlay { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 24px; background: rgba(14, 29, 29, .72); }
+.te-wire-window { width: min(1200px, 100%); max-height: min(860px, 100%); overflow: auto; background: #f7f8f5; color: #20312d; border-radius: 18px; box-shadow: 0 24px 80px #0005; }
+.te-wire-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 24px 28px 18px; background: white; }
+.te-wire-header small, .te-wire-eyebrow { color: #548675; font-size: .7rem; font-weight: 800; letter-spacing: .12em; }
+.te-wire-header h2 { margin: .35rem 0; }
+.te-wire-header p, .te-wire-properties p { color: #667570; margin: .3rem 0; }
+.te-wire-tabs { display: flex; gap: 8px; padding: 15px 28px; overflow-x: auto; border-bottom: 1px solid #dce4df; background: white; }
+.te-wire-tabs button { white-space: nowrap; }
+.te-wire-tabs button[aria-pressed=true] { background: #286b56; color: white; }
+.te-wire-layout { display: grid; grid-template-columns: minmax(0, 1fr) 275px; min-height: 460px; }
+.te-wire-canvas { padding: 24px; background-color: #f1f5f1; background-image: radial-gradient(#ccd9d0 1px, transparent 1px); background-size: 20px 20px; }
+.te-wire-canvas-title { display: flex; justify-content: space-between; color: #6d8276; font-size: .68rem; font-weight: 800; letter-spacing: .1em; }
+.te-wire-diagram { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: 150px 120px; align-items: center; column-gap: 20px; padding: 35px 5px 0; }
+.te-wire-node { position: relative; z-index: 1; display: flex; align-items: center; gap: 10px; min-width: 0; min-height: 86px; padding: 12px; text-align: left; background: white; border: 1px solid #d2ded7; border-radius: 12px; box-shadow: 0 5px 16px #203c2c12; }
+.te-wire-node.is-active { border: 2px solid #328367; box-shadow: 0 0 0 4px #32836720; }
+.te-wire-node small, .te-wire-node strong { display: block; overflow-wrap: anywhere; }
+.te-wire-node small { color: #789087; font-size: .62rem; letter-spacing: .08em; }
+.te-wire-node strong { margin-top: 4px; font-size: .82rem; }
+.te-wire-node i { margin-left: auto; color: #78a08e; font-style: normal; }
+.te-wire-icon { display: grid; place-items: center; flex: 0 0 38px; width: 38px; height: 38px; color: #287357; background: #e4f1e9; border-radius: 9px; font-size: 1.35rem; }
+.te-wire-shelly { grid-column: 2; grid-row: 1; }.te-wire-breaker { grid-column: 1; grid-row: 1; }.te-wire-light { grid-column: 3; grid-row: 1; }.te-wire-switch { grid-column: 2; grid-row: 2; }
+.te-wire-line { position: absolute; z-index: 0; background: #3e9a73; }.te-wire-line-main { left: 12%; right: 50%; top: 109px; height: 3px; }.te-wire-line-return { left: 50%; right: 12%; top: 103px; height: 3px; background: #8a4fb0; }.te-wire-line-neutral { right: 16%; top: 38px; width: 15%; height: 48px; border-top: 3px solid #3388c6; border-right: 3px solid #3388c6; background: transparent; }.te-wire-line-switch { left: 50%; top: 110px; height: 150px; width: 3px; background: #d5994d; }
+.te-wire-line-main { background: #ce3e3e; }
+.te-wire-cover-up { top: 100px; background: #80634e; }
+.te-wire-cover-down { left: 50%; right: 12%; top: 116px; height: 3px; background: #465661; }
+.te-wire-cover-switch { left: calc(50% + 8px); top: 110px; height: 150px; width: 3px; background: #a97835; }
+.te-wire-swatch-cover-up { background: #80634e; }.te-wire-swatch-cover-down { background: #465661; }
+.te-wire-line-neutral { left: 16%; width: auto; border-left: 3px solid #3388c6; }
+.te-wire-line-neutral-shelly { left: 50%; top: 38px; width: 3px; height: 48px; background: #3388c6; }
+.te-wire-line-phase-switch { left: 33.3%; width: 9%; top: 109px; height: 136px; border-left: 3px solid #ce3e3e; border-bottom: 3px solid #ce3e3e; background: transparent; }
+.te-wire-terminal { position: absolute; z-index: 2; top: 88px; left: 34%; padding: 1px 5px; border-radius: 4px; background: #fff; color: #a72c2c; font-size: .7rem; font-weight: 800; }
+.te-wire-terminal-neutral { left: 50%; top: 58px; color: #226b9d; }
+.te-wire-terminal-output { left: 64%; top: 80px; color: #754094; }
+.te-wire-terminal-input { left: 51%; top: 178px; color: #9a5c12; }
+.te-wire-legend { display: flex; flex-wrap: wrap; gap: 8px 20px; color: #50665c; font-size: .75rem; }.te-wire-legend span { display: flex; align-items: center; gap: 6px; }.te-wire-legend i { display: inline-block; width: 22px; height: 3px; border-radius: 2px; }.te-wire-swatch-neutral { background: #3388c6; }.te-wire-swatch-return { background: #8a4fb0; }.te-wire-swatch-phase { background: #ce3e3e; }.te-wire-swatch-switch { background: #d5994d; }
+.te-wire-note { color: #667970; font-size: .75rem; line-height: 1.5; }
+.te-wire-properties { padding: 25px; background: white; border-left: 1px solid #dce4df; }.te-wire-properties h3 { margin: .7rem 0; }.te-wire-properties .te-field { margin-top: 18px; }.te-wire-delete { margin-top: 28px; color: #a43838 !important; }
+.te-wire-empty { padding: 65px 20px; text-align: center; }.te-wire-empty > span { color: #589279; font-size: 3rem; }.te-wire-empty p { color: #667570; }
+@media (max-width: 750px) { .te-wire-overlay { padding: 8px; }.te-wire-window { max-height: 100%; }.te-wire-header { padding: 18px; }.te-wire-tabs { padding: 12px 18px; }.te-wire-layout { grid-template-columns: 1fr; }.te-wire-canvas { padding: 15px; overflow-x: auto; }.te-wire-diagram { min-width: 580px; }.te-wire-properties { border-left: 0; border-top: 1px solid #dce4df; } }

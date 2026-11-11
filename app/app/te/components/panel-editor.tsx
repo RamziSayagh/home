@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import ShellyFront from "./shelly-front";
+import ShellyLinks from "./shelly-links";
 import SchneiderRcdFront from "./schneider-rcd-front";
 import SchneiderBreakerFront from "./schneider-breaker-front";
 import SchneiderImpulseFront from "./schneider-impulse-front";
@@ -110,7 +110,7 @@ export default function PanelEditor() {
   const materials = materialList(workspace);
   const budgets = SUPPLIERS.map(supplier => ({ ...supplier, ...materialBudget(materials, supplier.id) }));
   const comparable = comparableSuppliersBudget(materials);
-  const catalog = PRODUCTS.filter((p) => p.kind === category && `${p.name} ${p.reference} ${p.rating}`.toLocaleLowerCase("fr").includes(query.toLocaleLowerCase("fr")));
+  const catalog = PRODUCTS.filter((p) => !p.legacy && p.kind === category && `${p.name} ${p.reference} ${p.rating}`.toLocaleLowerCase("fr").includes(query.toLocaleLowerCase("fr")));
   const distributionCatalog = DISTRIBUTORS.filter(p => `${p.name} ${p.reference}`.toLocaleLowerCase("fr").includes(query.toLocaleLowerCase("fr")));
   const distributionRow = selectedDistribution?.panelIndex === activePanel ? project.rows.find(row => row.id === selectedDistribution.rowId) : undefined;
   const distributionSegment = distributionRow ? rowDistributions(distributionRow).find(segment => segment.id === selectedDistribution?.id) : undefined;
@@ -182,11 +182,21 @@ export default function PanelEditor() {
     const board = panels[destination.panelIndex];
     const row = board.rows.find(r => r.id === destination.rowId);
     if (!row) return;
-    if (item.distributionId && item.panelIndex !== destination.panelIndex) { setNotice("Déplacez le répartiteur dans son tableau, ou ajoutez-en un dans l’autre tableau."); return; }
-    const sameRow = item.rowId === row.id;
+    const samePanel = item.panelIndex === destination.panelIndex;
+    const sameRow = samePanel && item.rowId === row.id;
     const error = distributionPlacementError(row, item.reference, destination.slot, board.capacity, sameRow ? item.distributionId : undefined);
     if (error) { setNotice(error); return; }
-    const segment = { id: sameRow && item.distributionId ? item.distributionId : uid(), reference: item.reference, slot: destination.slot };
+    const segment = { id: item.distributionId && !rowDistributions(row).some(d => d.id === item.distributionId && !sameRow) ? item.distributionId : uid(), reference: item.reference, slot: destination.slot };
+    if (item.distributionId && !samePanel && item.panelIndex !== undefined) {
+      const source = panels[item.panelIndex];
+      const sourceRow = source.rows.find(r => r.id === item.rowId);
+      if (!sourceRow || !rowDistributions(sourceRow).some(d => d.id === item.distributionId)) return;
+      const updatedSource = { ...source, rows: source.rows.map(r => r.id === item.rowId ? { ...r, distributor: "", distributions: rowDistributions(r).filter(d => d.id !== item.distributionId) } : r) };
+      const updatedBoard = { ...board, rows: board.rows.map(r => r.id === row.id ? { ...r, distributor: "", distributions: [...rowDistributions(r), segment].sort((a, b) => a.slot - b.slot) } : r) };
+      const next = item.panelIndex === 0 ? { ...updatedSource, secondPanel: updatedBoard } : { ...updatedBoard, secondPanel: updatedSource };
+      if (commitWorkspace(next, `${item.reference} déplacé dans l’autre tableau en position ${destination.slot + 1}.`)) selectDistribution({ reference: segment.reference, panelIndex: destination.panelIndex, rowId: row.id, id: segment.id });
+      return;
+    }
     const rows = board.rows.map(r => {
       let segments = rowDistributions(r);
       if (item.distributionId && r.id === item.rowId) segments = segments.filter(s => s.id !== item.distributionId);
@@ -235,8 +245,24 @@ export default function PanelEditor() {
     if (!destination) { setNotice("Déplacement annulé : déposez l’élément sur la bande correspondante."); return; }
     if (item.type === "distribution") { placeDistribution(item, destination); return; }
     if (item.deviceId) {
-      if (destination.panelIndex !== activePanel) { setNotice("Déplacez les appareils entre les rangées du même tableau. Ajoutez un appareil pour l’autre tableau."); return; }
-      const device = project.devices.find((d) => d.id === item.deviceId);
+      const sourceIndex = item.panelIndex ?? activePanel;
+      const source = panels[sourceIndex];
+      const device = source.devices.find((d) => d.id === item.deviceId);
+      if (destination.panelIndex !== sourceIndex) {
+        if (!device) return;
+        const board = panels[destination.panelIndex];
+        const error = placementError(board, device.reference, destination.rowId, destination.slot);
+        if (error) { setNotice(error); return; }
+        const hadBreakers = device.shellyLinks?.some(link => link.breakerId);
+        const hadSourceLinks = source.devices.some(d => d.upstreamId === device.id || d.shellyLinks?.some(link => link.breakerId === device.id));
+        const moved = { ...device, id: board.devices.some(d => d.id === device.id) ? uid() : device.id, rowId: destination.rowId, slot: destination.slot, upstreamId: "", ...(device.shellyLinks ? { shellyLinks: device.shellyLinks.map(link => ({ ...link, breakerId: "" })) } : {}) };
+        const updatedSource = removeDevice(source, device.id);
+        const updatedBoard = { ...board, devices: [...board.devices, moved] };
+        const next = sourceIndex === 0 ? { ...updatedSource, secondPanel: updatedBoard } : { ...updatedBoard, secondPanel: updatedSource };
+        const message = hadBreakers && PRODUCT_BY_REF[device.reference].kind === "domotics" ? "Shelly déplacé. Ses liens vers les disjoncteurs de l’ancien tableau ont été effacés ; choisissez les nouveaux disjoncteurs." : device.upstreamId || hadSourceLinks ? "Appareil déplacé. Les liens avec les appareils de l’ancien tableau ont été effacés ; réaffectez les protections et disjoncteurs concernés." : "Appareil déplacé dans l’autre tableau ; ses informations sont conservées.";
+        if (commitWorkspace(next, message)) { setSelectedPanel(destination.panelIndex); setSelectedId(moved.id); setSelectedDistribution(null); }
+        return;
+      }
       if (device) { moveDevice(device, destination.rowId, destination.slot); setSelectedId(device.id); }
     } else addDevice(item.reference, destination.rowId, destination.slot, destination.panelIndex);
   }
@@ -301,11 +327,10 @@ export default function PanelEditor() {
   }
 
   const previewError = activeDrag && target ? activeDrag.type === "distribution"
-    ? distributionPlacementError(panels[target.panelIndex].rows.find(r => r.id === target.rowId)!, activeDrag.reference, target.slot, panels[target.panelIndex].capacity, activeDrag.rowId === target.rowId && activeDrag.panelIndex === target.panelIndex ? activeDrag.distributionId : undefined) || (activeDrag.distributionId && activeDrag.panelIndex !== target.panelIndex ? "Autre tableau" : null)
-    : placementError(panels[target.panelIndex], activeDrag.reference, target.rowId, target.slot, activeDrag.deviceId) || (activeDrag.deviceId && target.panelIndex !== activePanel ? "Autre tableau" : null) : null;
+    ? distributionPlacementError(panels[target.panelIndex].rows.find(r => r.id === target.rowId)!, activeDrag.reference, target.slot, panels[target.panelIndex].capacity, activeDrag.rowId === target.rowId && activeDrag.panelIndex === target.panelIndex ? activeDrag.distributionId : undefined)
+    : placementError(panels[target.panelIndex], activeDrag.reference, target.rowId, target.slot, activeDrag.panelIndex === target.panelIndex ? activeDrag.deviceId : undefined) : null;
 
   return <div className="te-app">
-    <header className="te-nav"><Link className="te-brand" href="/">MAISON 1973 <span>/</span> <span>LES TRAVAUX</span></Link><Link className="te-back" href="/">← Retour à la maison</Link></header>
     <main className="te-main">
       <div className="te-heading"><div><p className="te-eyebrow">L’ATELIER DE LA MAISON <span>01 / ÉLECTRICITÉ</span></p><h1>TE<span>.</span></h1><p className="te-subtitle">Chaque circuit à sa place. Composez votre tableau, rangée par rangée.</p></div><div className="te-system"><span className="te-green-dot" /> SCHNEIDER ELECTRIC<strong>Resi9 XE</strong><small>Système embrochable · étude monophasée</small></div></div>
       {!ready ? <p className="te-loading" role="status">Ouverture de votre atelier…</p> : <>
@@ -375,7 +400,7 @@ export default function PanelEditor() {
             <aside className="te-inspector te-card" aria-label="Détails de l’appareil"><div className="te-section-heading"><span className="te-step">03</span><h2>Les détails</h2></div>
               {distributionProduct ? <DistributionDetails onAdd={!distributionSegment ? () => addDistribution(distributionProduct.reference) : undefined} product={distributionProduct} row={distributionRow} segment={distributionSegment} panelIndex={activePanel} onRemove={distributionRow && distributionSegment ? () => removeDistribution(activePanel, distributionRow.id, distributionSegment.id) : undefined} /> : selected && selectedProduct ? <><div className="te-inspector-preview"><EquipmentFace product={selectedProduct} /><div><span className="te-badge">{selectedProduct.range ?? "RESI9 XE"}</span><h3>{selectedProduct.name}</h3><p>{selectedProduct.reference}</p><small>{selectedProduct.detail}</small><SupplierPrice referenceCode={selected.reference} /></div></div>
                 <Field label="Étiquette de l’appareil"><input value={selected.label} placeholder={selectedProduct.name} maxLength={160} onChange={(e) => updateDevice({ label: e.target.value })} /></Field>
-                {selectedProduct.kind === "breaker" ? <><Field label="Circuit associé"><select aria-label="Circuit associé" value={selected.circuitId} onChange={(e) => updateDevice({ circuitId: e.target.value })}><option value="">Aucun circuit</option>{workspace.circuits.map((c) => <option key={c.id} value={c.id} disabled={selected.secondCircuitId === c.id || panels.some((panel, index) => panel.devices.some((d) => !(index === activePanel && d.id === selected.id) && deviceCircuitIds(d).includes(c.id)))}>{c.name || "Circuit sans nom"}{c.usage === RELAY_LIGHTING_USAGE ? " · TL" : ""}</option>)}</select></Field>{supportsTwoDepartures(selected.reference) ? <Field label="Second circuit associé (facultatif)"><select aria-label="Second circuit associé (facultatif)" value={selected.secondCircuitId ?? ""} onChange={(e) => updateDevice({ secondCircuitId: e.target.value })}><option value="">Aucun second circuit</option>{workspace.circuits.map((c) => <option key={c.id} value={c.id} disabled={selected.circuitId === c.id || panels.some((panel, index) => panel.devices.some((d) => !(index === activePanel && d.id === selected.id) && deviceCircuitIds(d).includes(c.id)))}>{c.name || "Circuit sans nom"}{c.usage === RELAY_LIGHTING_USAGE ? " · TL" : ""}</option>)}</select></Field> : null}<Field label="Différentiel amont"><select value={selected.upstreamId} onChange={(e) => updateDevice({ upstreamId: e.target.value })}><option value="">Non défini</option>{project.devices.filter((d) => PRODUCT_BY_REF[d.reference].kind === "rcd").map((d) => <option key={d.id} value={d.id}>{d.label || PRODUCT_BY_REF[d.reference].name} · {project.rows.find((r) => r.id === d.rowId)?.name} / {d.slot + 1}</option>)}</select></Field></> : selectedProduct.kind === "impulse" ? <p className="te-info">Commande par boutons-poussoirs. Utilisez l’étiquette pour repérer le circuit commandé ; son câblage et sa protection restent à préciser.</p> : selectedProduct.kind === "spd" ? <p className="te-info">Protection contre les surtensions. Raccordement et liaison à la terre à prévoir selon la notice Schneider.</p> : selectedProduct.kind === "domotics" ? <p className="te-info">Appareil Shelly sur rail DIN : protection, alimentation, câblage et compatibilité avec la distribution du tableau restent à confirmer selon la notice fabricant.</p> : <p className="te-info">Ce différentiel peut être choisi comme protection amont dans les détails de chaque disjoncteur.</p>}
+                {selectedProduct.kind === "breaker" ? <><Field label="Circuit associé"><select aria-label="Circuit associé" value={selected.circuitId} onChange={(e) => updateDevice({ circuitId: e.target.value })}><option value="">Aucun circuit</option>{workspace.circuits.map((c) => <option key={c.id} value={c.id} disabled={selected.secondCircuitId === c.id || panels.some((panel, index) => panel.devices.some((d) => !(index === activePanel && d.id === selected.id) && deviceCircuitIds(d).includes(c.id)))}>{c.name || "Circuit sans nom"}{c.usage === RELAY_LIGHTING_USAGE ? " · TL" : ""}</option>)}</select></Field>{supportsTwoDepartures(selected.reference) ? <Field label="Second circuit associé (facultatif)"><select aria-label="Second circuit associé (facultatif)" value={selected.secondCircuitId ?? ""} onChange={(e) => updateDevice({ secondCircuitId: e.target.value })}><option value="">Aucun second circuit</option>{workspace.circuits.map((c) => <option key={c.id} value={c.id} disabled={selected.circuitId === c.id || panels.some((panel, index) => panel.devices.some((d) => !(index === activePanel && d.id === selected.id) && deviceCircuitIds(d).includes(c.id)))}>{c.name || "Circuit sans nom"}{c.usage === RELAY_LIGHTING_USAGE ? " · TL" : ""}</option>)}</select></Field> : null}<Field label="Différentiel amont"><select value={selected.upstreamId} onChange={(e) => updateDevice({ upstreamId: e.target.value })}><option value="">Non défini</option>{project.devices.filter((d) => PRODUCT_BY_REF[d.reference].kind === "rcd").map((d) => <option key={d.id} value={d.id}>{d.label || PRODUCT_BY_REF[d.reference].name} · {project.rows.find((r) => r.id === d.rowId)?.name} / {d.slot + 1}</option>)}</select></Field></> : selectedProduct.kind === "impulse" ? <p className="te-info">Commande par boutons-poussoirs. Utilisez l’étiquette pour repérer le circuit commandé ; son câblage et sa protection restent à préciser.</p> : selectedProduct.kind === "spd" ? <p className="te-info">Protection contre les surtensions. Raccordement et liaison à la terre à prévoir selon la notice Schneider.</p> : selectedProduct.kind === "domotics" ? <ShellyLinks device={selected} project={project} circuits={workspace.circuits} onChange={shellyLinks => updateDevice({ shellyLinks })} /> : <p className="te-info">Ce différentiel peut être choisi comme protection amont dans les détails de chaque disjoncteur.</p>}
                 <Field label="Variante de l’appareil"><select value={selected.reference} onChange={(e) => updateDevice({ reference: e.target.value })}>{PRODUCTS.filter((p) => p.kind === selectedProduct.kind).map((p) => <option key={p.reference} value={p.reference}>{p.name}</option>)}</select></Field>
                 <form className="te-move-form" key={`${selected.id}:${selected.rowId}:${selected.slot}`} onSubmit={(e) => { e.preventDefault(); const data = new FormData(e.currentTarget); moveDevice(selected, String(data.get("row")), Number(data.get("position")) - 1); }}><Field label="Déplacer vers la rangée"><select name="row" defaultValue={selected.rowId}>{project.rows.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}</select></Field><Field label="Position de départ"><input type="number" name="position" min={1} max={project.capacity} required defaultValue={selected.slot + 1} /></Field><button type="submit">Déplacer l’appareil →</button></form>
                 <div className="te-inspector-actions"><button onClick={() => addDevice(selected.reference, selected.rowId)}>Dupliquer</button><button className="te-danger" onClick={() => { commit(removeDevice(project, selected.id), "Appareil supprimé. Ses circuits restent disponibles."); setSelectedId(""); }}>Supprimer</button></div><a className="te-source" href={selectedProduct.source} target="_blank" rel="noreferrer">Consulter la fiche Schneider ↗</a>

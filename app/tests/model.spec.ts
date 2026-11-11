@@ -5,6 +5,19 @@ function device(patch: Partial<Device> = {}): Device {
   return { id: "d1", reference: "R9EFC616", rowId: "row-1", slot: 0, label: "", circuitId: "", upstreamId: "", ...patch };
 }
 
+test("Shelly links survive validation and clear deleted references", () => {
+  const project = emptyProject();
+  project.circuits = [{ id: "light", name: "Salon", room: "Salon", floor: "", usage: "Éclairage", load: "", cable: "" }];
+  project.devices = [device({ id: "breaker" }), device({ id: "shelly", reference: "SHELLY-PRO-2PM", slot: 1, shellyLinks: [{ id: "link", channel: "1", breakerId: "breaker", circuitId: "light", light: "Plafonnier", switchName: "Entrée", cable: "L1" }] })];
+  const restored = parseProject(JSON.stringify(project));
+  expect(restored.devices[1].shellyLinks?.[0].switchName).toBe("Entrée");
+  expect(removeDevice(restored, "breaker").devices[0].shellyLinks?.[0].breakerId).toBe("");
+  expect(removeCircuit(restored, "light").devices[1].shellyLinks?.[0].circuitId).toBe("");
+  const invalid = structuredClone(restored);
+  invalid.devices[1].shellyLinks![0].breakerId = "missing";
+  expect(() => validateProject(invalid)).toThrow("Liaison Shelly invalide");
+});
+
 test("single-slot Shelly devices retain their positions in saved projects", () => {
   for (const reference of ["SHELLY-PRO-2", "SHELLY-PRO-2PM", "SHELLY-PRO-DIMMER-2PM", "SHELLY-PRO-RGBWW-PM"]) {
     const project = emptyProject();

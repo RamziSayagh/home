@@ -47,9 +47,12 @@ export default function UbiquitiFront({ reference, name }: { reference: string; 
   if (model.startsWith("unas-") || model === "enas") return <NasFront model={model} name={name} />;
   const gateway = model.startsWith("udm-");
   const maxGateway = model === "udm-pro-max";
+  const aggregation = model === "usw-aggregation";
+  const xg = model === "usw-pro-xg-10-poe";
   const maxSwitch = model.startsWith("usw-pro-max");
   const legacy = model === "us-24-250w";
   const patch = model === "uacc-rack-panel-patch-blank-24";
+  const brush = model === "uacc-rack-panel-brush-1u";
   const shelf = model === "uacc-rack-shelf-clv";
   const poe = model.includes("poe") || model === "udm-se" || legacy;
   return <svg className="ubiquiti-front" viewBox="0 0 1000 100" role="img" aria-label={`Façade illustrée du ${name}`}>
@@ -57,16 +60,16 @@ export default function UbiquitiFront({ reference, name }: { reference: string; 
     <rect x="1" y="1" width="998" height="98" rx="3" fill={`url(#${id}-metal)`} stroke="#9b9fa7" />
     <path d="M4 3h992" stroke="#fff" strokeOpacity=".9" /><path d="M3 97h994" stroke="#777f88" />
     {[9, 981].map(x => <g key={x}>{[12, 78].map(y => <rect key={y} x={x} y={y} width="10" height="10" rx="4" fill="#5f656b" stroke="#eef0f3" />)}</g>)}
-    {shelf ? <><path d="M25 18h950v72H25z" fill="#343b43" /><path d="M25 82l45-48h860l45 48z" fill={`url(#${id}-tray)`} />{Array.from({ length: 42 }, (_, i) => <g key={i}><ellipse cx={90 + i * 20} cy="57" rx="3" ry="1.8" fill="#6d767f" /><ellipse cx={90 + i * 20} cy="65" rx="3" ry="1.8" fill="#6d767f" /></g>)}<rect x="25" y="83" width="950" height="12" fill={`url(#${id}-metal)`} /></> : patch ? <>{Array.from({ length: 24 }, (_, i) => <g key={i}><rect x={33 + i * 39} y="30" width="29" height="40" fill="#24292e" stroke="#989ea5" /><path d={`M${34 + i * 39} 31v37h6V31`} fill="#525961" /><text x={47 + i * 39} y="24" fontSize="7" textAnchor="middle" fill="#626973">{i + 1}</text></g>)}</> : <>
+    {brush ? <><rect x="48" y="23" width="904" height="54" rx="2" fill="#a9afb5" stroke="#868d94" /><rect x="54" y="28" width="892" height="44" fill="#202327" />{Array.from({ length: 178 }, (_, i) => <path key={i} d={`M${56 + i * 5} 29v42`} stroke={i % 3 === 0 ? "#44494b" : "#303436"} strokeWidth="2" />)}<path d="M54 28h892M54 72h892" stroke="#e8eaec" strokeWidth="2" /></> : shelf ? <><path d="M25 18h950v72H25z" fill="#343b43" /><path d="M25 82l45-48h860l45 48z" fill={`url(#${id}-tray)`} />{Array.from({ length: 42 }, (_, i) => <g key={i}><ellipse cx={90 + i * 20} cy="57" rx="3" ry="1.8" fill="#6d767f" /><ellipse cx={90 + i * 20} cy="65" rx="3" ry="1.8" fill="#6d767f" /></g>)}<rect x="25" y="83" width="950" height="12" fill={`url(#${id}-metal)`} /></> : patch ? <>{Array.from({ length: 24 }, (_, i) => <g key={i}><rect x={33 + i * 39} y="30" width="29" height="40" fill="#24292e" stroke="#989ea5" /><path d={`M${34 + i * 39} 31v37h6V31`} fill="#525961" /><text x={47 + i * 39} y="24" fontSize="7" textAnchor="middle" fill="#626973">{i + 1}</text></g>)}</> : <>
       <Screen legacy={legacy} />
-      <text x="54" y="85" textAnchor="middle" fontSize="6" fill="#3a4148">{gateway ? (maxGateway ? "UDM Pro Max" : poe ? "Dream Machine SE" : "UDM Pro") : legacy ? "UniFi Switch" : maxSwitch ? "USW Pro Max" : model.includes("pro") ? "USW Pro" : "USW"}{poe ? " ⚡" : ""}</text>
+      <text x="54" y="85" textAnchor="middle" fontSize="6" fill="#3a4148">{gateway ? (maxGateway ? "UDM Pro Max" : poe ? "Dream Machine SE" : "UDM Pro") : legacy ? "UniFi Switch" : aggregation ? "USW Aggregation" : maxSwitch ? "USW Pro Max" : model.includes("pro") ? "USW Pro" : "USW"}{poe ? " ⚡" : ""}</text>
       {!legacy && Array.from({ length: 5 }, (_, i) => <rect key={i} x={95 + i * 174} y="6" width="167" height="2.5" rx="1" fill="#4c5157" />)}
-      {gateway ? <>
+      {aggregation ? <>{Array.from({ length: 8 }, (_, i) => <g key={i} transform={`translate(${785 + (i % 4) * 43} ${i < 4 ? 20 : 53})`}><rect width="35" height="25" fill="#555d66" stroke="#90969e" /><rect x="4" y="4" width="27" height="16" fill="#1c232c" /><path d="M5 20h25" stroke="#a0a8af" /><text x="17.5" y="31" textAnchor="middle" fontSize="5" fill="#4f555c">{i + 1}</text></g>)}</> : gateway ? <>
         {(maxGateway ? [100, 344] : [425]).map(x => <g key={x}><rect x={x} y="18" width="241" height="64" rx="1" fill={`url(#${id}-metal)`} stroke="#51565d" strokeWidth="1.5" /><rect x={x + 2} y="21" width="3" height="58" fill="#5a6068" /><circle cx={x + 218} cy="50" r="1.5" fill="#5d646c" /></g>)}
         {Array.from({ length: 8 }, (_, i) => <Ethernet key={i} x={700 + Math.floor(i / 2) * 35} y={i % 2 ? 54 : 22} number={i + 1} />)}
         <Ethernet x={875} y={54} number={9} />
-      </> : Array.from({ length: 24 }, (_, i) => <Ethernet key={i} x={maxSwitch ? 100 + i * 32.3 + Math.floor(i / 8) * 5 : 480 + Math.floor(i / 2) * 34} y={maxSwitch ? 50 : i % 2 ? 54 : 22} number={i + 1} light={maxSwitch} />)}
-      {[0, 1].map(i => <g key={i} transform={`translate(${maxSwitch ? 899 + i * 33 : 920} ${maxSwitch ? 55 : 22 + i * 32})`}><rect width="29" height="23" fill="#555d66" stroke="#90969e" /><rect x="3" y="4" width="23" height="14" fill="#1c232c" /><path d="M4 18h21" stroke="#a0a8af" /><rect x="22" y="1" width="4" height="2" fill="#a8c991" /></g>)}
+      </> : xg ? Array.from({ length: 10 }, (_, i) => <Ethernet key={i} x={530 + Math.floor(i / 2) * 60} y={i % 2 ? 54 : 22} number={i + 1} light />) : Array.from({ length: 24 }, (_, i) => <Ethernet key={i} x={maxSwitch ? 100 + i * 32.3 + Math.floor(i / 8) * 5 : 480 + Math.floor(i / 2) * 34} y={maxSwitch ? 50 : i % 2 ? 54 : 22} number={i + 1} light={maxSwitch} />)}
+      {!aggregation && [0, 1].map(i => <g key={i} transform={`translate(${maxSwitch ? 899 + i * 33 : 920} ${maxSwitch ? 55 : 22 + i * 32})`}><rect width="29" height="23" fill="#555d66" stroke="#90969e" /><rect x="3" y="4" width="23" height="14" fill="#1c232c" /><path d="M4 18h21" stroke="#a0a8af" /><rect x="22" y="1" width="4" height="2" fill="#a8c991" /></g>)}
       <circle cx="966" cy="85" r="1.5" fill="#303740" />
     </>}
   </svg>;

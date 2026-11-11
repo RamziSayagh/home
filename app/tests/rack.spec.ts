@@ -39,22 +39,27 @@ test("rack placement, geometry, drag and persistence", async ({ page }) => {
 test("official references and illustrated rack survive reload", async ({ page, request }) => {
   await page.goto("/baie");
   const cards = page.locator(".rack-catalogue article");
-  await expect(cards).toHaveCount(16);
-  await expect(page.locator(".rack-catalogue svg[role=img]")).toHaveCount(16);
+  await expect(cards).toHaveCount(19);
+  await expect(page.locator(".rack-catalogue svg[role=img]")).toHaveCount(19);
+  await expect(cards.filter({ has: page.getByRole("heading", { name: "Switch Pro XG 10 PoE", exact: true }) })).toContainText("629,00");
+  await expect(cards.filter({ has: page.getByRole("heading", { name: "Switch Aggregation", exact: true }) })).toContainText("240,00");
+  await expect(cards.filter({ has: page.getByRole("heading", { name: "Panneau passe-câbles à brosse", exact: true }) })).toContainText("35,00");
   await expect(cards.first().locator(".rack-price")).toContainText("340,00");
   await expect(cards.first().getByRole("link", { name: "Boutique Europe" })).toHaveAttribute("href", "https://eu.store.ui.com/eu/en/products/udm-pro");
   for (const link of await cards.getByRole("link", { name: "Visuel officiel" }).all()) {
-    const response = await request.get((await link.getAttribute("href"))!);
+    const href = (await link.getAttribute("href"))!;
+    if (href.startsWith("https://")) continue;
+    const response = await request.get(href);
     expect(response.ok()).toBeTruthy();
     expect(response.headers()["content-type"]).toContain("image/png");
   }
   await page.getByRole("button", { name: "24 U" }).click();
   for (const card of await cards.all()) await card.getByRole("button", { name: "Ajouter +" }).click();
-  await expect(page.locator(".rack-frame svg")).toHaveCount(16);
-  await expect(page.locator(".rack-budget strong")).toContainText("9 644,00");
+  await expect(page.locator(".rack-frame svg")).toHaveCount(19);
+  await expect(page.locator(".rack-budget strong")).toContainText("10 548,00");
   await page.reload();
-  await expect(page.locator(".rack-frame svg")).toHaveCount(16);
-  await expect(page.locator(".rack-budget strong")).toContainText("9 644,00");
+  await expect(page.locator(".rack-frame svg")).toHaveCount(19);
+  await expect(page.locator(".rack-budget strong")).toContainText("10 548,00");
   await page.screenshot({ path: "test-results/rack-desktop.png", fullPage: true });
 });
 

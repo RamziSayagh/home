@@ -1,6 +1,5 @@
 ﻿/* eslint-disable @next/next/no-img-element -- Preserve the original plans' intrinsic proportions. */
-import { Gallery,GalleryPhoto,RoomMenu } from "./renovation-interactions";
-import Link from "next/link";
+import { Gallery,GalleryPhoto } from "./renovation-interactions";
 
 const photos=[
   {
@@ -116,61 +115,7 @@ const photos=[
 export default function Home() {
   return (
     <Gallery photos={photos}>
-      <nav className="nav" aria-label="Navigation principale">
-        <div className="wrap">
-          <a className="brand" href="#projet">MAISON 1973</a>
-          <div className="links">
-            <a href="#projet">Projet</a>
-            <a href="#etage">1er étage</a>
-            <a href="#rdc">RDC</a>
-            <a href="#exterieur">Extérieur</a>
-            <Link href="/te">TE</Link>
-            <Link href="/achats">Achats</Link>
-            <Link href="/baie">Baie</Link>
-            <Link href="/3d">3D</Link>
-          </div>
-          <RoomMenu>
-            <summary>
-              <span className="menu-word-desktop">Pièces</span>
-              <span className="menu-word-mobile">Menu</span>
-              <span aria-hidden="true">⌄</span>
-            </summary>
-            <div className="menu-panel">
-              <div className="menu-group">
-                <p>Rubriques</p>
-                <a href="#projet">Le projet</a>
-                <a href="#etage">Premier étage</a>
-                <a href="#pieces-etage">Pièces du premier étage</a>
-                <a href="#materiel-etage">Matériel du premier étage</a>
-                <a href="#rdc">Rez-de-chaussée</a>
-                <a href="#exterieur">Extérieurs</a>
-                <Link href="/te">TE</Link>
-                <Link href="/achats">Achats · Articles et matériaux</Link>
-                <Link href="/baie">Baie · Réseau informatique</Link>
-                <Link href="/3d">3D · La maison et son quartier</Link>
-              </div>
-              <div className="menu-group">
-                <p>Pièces du premier étage</p>
-                <a href="#chambre-parentale">Chambre parentale</a>
-                <a href="#sdb-parentale">Salle de bains parentale</a>
-                <a href="#chambre-enfant">Chambre enfant</a>
-                <a href="#palier">Palier</a>
-                <a href="#sdb-2">Salle d&#39;eau du palier</a>
-                <a href="#chambre-2">Deuxième chambre</a>
-              </div>
-              <div className="menu-group">
-                <p>Pièces du rez-de-chaussée</p>
-                <a href="#rdc-entree">Entrée</a>
-                <a href="#rdc-bureau">Bureau</a>
-                <a href="#rdc-chambre">Chambre</a>
-                <a href="#rdc-salle-a-manger">Salle à manger</a>
-                <a href="#rdc-salle-de-bains">Salle d&#39;eau</a>
-                <a href="#rdc-salon-cuisine">Salon et cuisine ouverte</a>
-              </div>
-            </div>
-          </RoomMenu>
-        </div>
-      </nav>
+
       <header className="hero" id="projet">
         <div className="wrap">
           <div className="kicker">Rénovation complète</div>

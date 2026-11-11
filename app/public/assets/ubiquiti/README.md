@@ -1,6 +1,6 @@
 # Ubiquiti illustration references
 
-These original manufacturer PNGs were downloaded from the official European Ubiquiti store on 2026-10-27. `sources.json` records each product page and CDN URL. Copyright remains with Ubiquiti.
+These original manufacturer PNGs were downloaded from the official European Ubiquiti store on 2026-10-27 and 2026-10-29. `sources.json` records each product page and CDN URL. Copyright remains with Ubiquiti.
 
 Run `node scripts/download-ubiquiti-images.mjs` from `app/` to refresh the references. The script selects the first non-video product gallery image and checks the asset host and content type.
 
